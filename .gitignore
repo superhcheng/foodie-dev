@@ -43,3 +43,6 @@ test-lib/
 *.iws
 *.iml
 *.ipr
+
+
+*.DS_Store
