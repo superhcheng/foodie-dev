@@ -2,13 +2,14 @@ package us.supercheng.pojo;
 
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
-@SpringBootConfiguration
+@ComponentScan(basePackages = "us.supercheng")
+@MapperScan(basePackages = "us.supercheng.mapper")
 public class Application {
-
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
