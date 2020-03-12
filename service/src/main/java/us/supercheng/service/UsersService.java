@@ -1,7 +1,9 @@
 package us.supercheng.service;
 
-import org.springframework.stereotype.Service;
+import us.supercheng.bo.UserBO;
+import us.supercheng.pojo.Users;
 
 public interface UsersService {
     boolean isUsernameExist(String username);
+    Users createUser(UserBO user);
 }
