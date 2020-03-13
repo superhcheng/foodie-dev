@@ -44,6 +44,7 @@ public class UsersServiceImpl implements UsersService {
         ret.setUsername(user.getUsername());
         ret.setNickname(user.getUsername());
         ret.setSex(Sex.Secret.type);
+        ret.setFace("PLACEHOLDER");
         try {
             ret.setPassword(MD5Utils.getMD5Str(user.getPassword()));
         } catch (Exception ex) {}
@@ -51,6 +52,8 @@ public class UsersServiceImpl implements UsersService {
         Date now = new Date();
         ret.setCreatedTime(now);
         ret.setUpdatedTime(now);
+
+        this.usersMapper.insert(ret);
 
         return ret;
     }
