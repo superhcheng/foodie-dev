@@ -1,4 +1,4 @@
-package us.supercheng.pojo.controller;
+package us.supercheng.api.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -1,4 +1,4 @@
-package us.supercheng.pojo.controller;
+package us.supercheng.api.controller;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +8,7 @@ import us.supercheng.service.UsersService;
 import us.supercheng.utils.APIResponse;
 
 @RestController
-@RequestMapping("password")
+@RequestMapping("passport")
 public class PasswordController {
 
     @Autowired

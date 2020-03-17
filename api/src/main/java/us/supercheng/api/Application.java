@@ -1,4 +1,4 @@
-package us.supercheng.pojo;
+package us.supercheng.api;
 
 
 import org.springframework.boot.SpringApplication;
