@@ -57,4 +57,22 @@ public class UsersServiceImpl implements UsersService {
 
         return ret;
     }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public Users login(UserBO user) {
+        Example userExp = new Example(Users.class);
+        Example.Criteria criteria = userExp.createCriteria();
+
+        criteria.andEqualTo("username", user.getUsername());
+        try {
+            criteria.andEqualTo("password", MD5Utils.getMD5Str(user.getPassword()));
+        } catch (Exception ex) {
+            throw new RuntimeException("MD5 String Conversion Exception");
+        }
+
+        return this.usersMapper.selectOneByExample(userExp);
+    }
+
+
 }
