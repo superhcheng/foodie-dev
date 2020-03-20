@@ -7,10 +7,14 @@ import us.supercheng.bo.UserBO;
 import us.supercheng.pojo.Users;
 import us.supercheng.service.UsersService;
 import us.supercheng.utils.APIResponse;
+import us.supercheng.utils.CookieUtils;
+import us.supercheng.utils.JsonUtils;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("passport")
-public class PasswordController {
+public class PassportController {
 
     @Autowired
     private UsersService usersService;
@@ -28,7 +32,7 @@ public class PasswordController {
     }
 
     @PostMapping("regist")
-    public APIResponse regist(@RequestBody UserBO userBO) {
+    public APIResponse regist(@RequestBody UserBO userBO, HttpServletRequest req, HttpServletResponse resp) {
         String username = userBO.getUsername(),
                 pwd = userBO.getPassword(),
                 pwdConfirm = userBO.getConfirmPassword();
@@ -48,13 +52,13 @@ public class PasswordController {
         if (this.usersService.isUsernameExist(username))
             return APIResponse.errorMsg("This username is already taken.");
 
-        this.usersService.createUser(userBO);
-
+        Users user = this.usersService.createUser(userBO);
+        this.setUsersObjCookie(user, req, resp);
         return APIResponse.ok();
     }
 
     @PostMapping("login")
-    public APIResponse login(@RequestBody UserBO userBO) {
+    public APIResponse login(@RequestBody UserBO userBO, HttpServletRequest req, HttpServletResponse resp) {
         if (StringUtils.isBlank(userBO.getUsername()))
             return APIResponse.errorMsg("Empty username");
 
@@ -67,6 +71,22 @@ public class PasswordController {
             return APIResponse.errorMsg("Incorrect Username or Password");
         }
 
+        this.setUsersObjCookie(user, req, resp);
         return APIResponse.ok(user);
+    }
+
+    private void setUsersObjCookie(Users user, HttpServletRequest req, HttpServletResponse resp) {
+        user.setCreatedTime(null);
+        user.setUpdatedTime(null);
+        user.setPassword(null);
+        user.setBirthday(null);
+        user.setRealname(null);
+        CookieUtils.setCookie(req, resp, "user", JsonUtils.objectToJson(user), true);
+    }
+
+    @PostMapping("logout")
+    public APIResponse logout(HttpServletRequest req, HttpServletResponse resp) {
+        CookieUtils.deleteCookie(req, resp, "user");
+        return APIResponse.ok();
     }
 }
