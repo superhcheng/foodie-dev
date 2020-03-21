@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="us.supercheng.mapper.CategoryMapperCustom" >
+
+  <resultMap id="CategoryVOMap" type="us.supercheng.vo.CategoryVO" >
+    <id column="id" property="id"/>
+    <result column="name" property="name" />
+    <result column="type" property="type"/>
+    <result column="father_id" property="fatherId"/>
+
+    <collection property="subCatList" ofType="us.supercheng.vo.SubCategoryVO">
+      <id column="subId" property="subId"/>
+      <result column="subName" property="subName" />
+      <result column="subType" property="subType"/>
+      <result column="subFatherId" property="subFatherId"/>
+    </collection>
+  </resultMap>
+
+  <select id="getSubCatList" resultMap="CategoryVOMap" parameterType="int">
+    SELECT
+      parent.id as `id`,
+      parent.name as `name`,
+      parent.type as `type`,
+      parent.father_id as `fatherId`,
+      child.id as `subId`,
+      child.name as `subName`,
+      child.type as `subType`,
+      child.father_id as `subFatherId`
+    FROM
+        category as child
+    LEFT JOIN
+        category as parent
+    ON
+        parent.id = child.father_id
+    WHERE
+        parent.father_id = #{parentId};
+  </select>
+</mapper>

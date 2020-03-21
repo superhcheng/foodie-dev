@@ -2,6 +2,7 @@ package us.supercheng.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import us.supercheng.service.CarouselService;
@@ -26,5 +27,13 @@ public class IndexController {
     @GetMapping("cats")
     public APIResponse getCategoriesByType() {
         return APIResponse.ok(this.categoryService.getBaseCategories());
+    }
+
+    @GetMapping("subCat/{parentId}")
+    public APIResponse getSubCatList(@PathVariable(name = "parentId") Integer parentId) {
+        if (parentId == null)
+            return APIResponse.errorMsg("Invalid Parent Category ID");
+
+        return APIResponse.ok(this.categoryService.getSubCatListByParentId(parentId));
     }
 }
