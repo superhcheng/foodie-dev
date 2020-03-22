@@ -9,8 +9,8 @@ import us.supercheng.mapper.CategoryMapper;
 import us.supercheng.mapper.CategoryMapperCustom;
 import us.supercheng.pojo.Category;
 import us.supercheng.service.CategoryService;
+import us.supercheng.vo.CategoryHighlightVO;
 import us.supercheng.vo.CategoryVO;
-
 import java.util.List;
 
 @Service
@@ -41,5 +41,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryVO> getSubCatListByParentId(Integer parentId) {
         return this.categoryMapperCustom.getSubCatList(parentId);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public CategoryHighlightVO getSixNewItems(Integer catId) {
+        return this.categoryMapperCustom.getSixNewItems(catId);
     }
 }

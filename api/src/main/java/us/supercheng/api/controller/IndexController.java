@@ -36,4 +36,12 @@ public class IndexController {
 
         return APIResponse.ok(this.categoryService.getSubCatListByParentId(parentId));
     }
+
+    @GetMapping("sixNewItems/{rootCatId}")
+    public APIResponse getSixNewItems(@PathVariable(name="rootCatId") Integer rootCatId) {
+        if (rootCatId == null)
+            return APIResponse.errorMsg("Invalid Parent Category ID");
+
+        return APIResponse.ok(this.categoryService.getSixNewItems(rootCatId));
+    }
 }
