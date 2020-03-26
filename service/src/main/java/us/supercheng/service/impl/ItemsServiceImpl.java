@@ -1,33 +1,44 @@
 package us.supercheng.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
-import us.supercheng.mapper.ItemsImgMapper;
-import us.supercheng.mapper.ItemsMapper;
-import us.supercheng.mapper.ItemsParamMapper;
-import us.supercheng.mapper.ItemsSpecMapper;
+import us.supercheng.enums.CommentLevel;
+import us.supercheng.mapper.*;
 import us.supercheng.mymapper.MyMapper;
 import us.supercheng.pojo.*;
 import us.supercheng.service.ItemsService;
+import us.supercheng.utils.PIIUtils;
+import us.supercheng.utils.PagedResult;
+import us.supercheng.vo.ItemCommentVO;
+import us.supercheng.vo.ItemCommentsSummaryVO;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ItemsServiceImpl implements ItemsService {
 
     @Autowired
-    ItemsMapper itemsMapper;
+    private ItemsMapper itemsMapper;
 
     @Autowired
-    ItemsImgMapper itemsImgMapper;
+    private ItemsImgMapper itemsImgMapper;
 
     @Autowired
-    ItemsSpecMapper itemsSpecMapper;
+    private ItemsSpecMapper itemsSpecMapper;
 
     @Autowired
-    ItemsParamMapper itemsParamMapper;
+    private ItemsParamMapper itemsParamMapper;
+
+    @Autowired
+    private ItemsCommentsMapper itemsCommentsMapper;
+
+    @Autowired
+    private ItemsMapperCustom itemsMapperCustom;
 
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -53,6 +64,45 @@ public class ItemsServiceImpl implements ItemsService {
     public ItemsParam queryItemParamByItemId(String id) {
         return this.queryOneHelper(ItemsParam.class, this.itemsParamMapper, "itemId", id);
     }
+
+    @Override
+    public ItemCommentsSummaryVO getItemCommentsSummary(String id) {
+        return new ItemCommentsSummaryVO(
+                this.getItemCommentCountByLevel(id, CommentLevel.Good.type),
+                this.getItemCommentCountByLevel(id, CommentLevel.Normal.type),
+                this.getItemCommentCountByLevel(id, CommentLevel.Bad.type)
+            );
+    }
+
+    @Override
+    public Integer getItemCommentCountByLevel(String id, Integer level) {
+        Example exp = new Example(ItemsComments.class);
+        Example.Criteria criteria = exp.createCriteria();
+        criteria.andEqualTo("itemId", id);
+        criteria.andEqualTo("commentLevel", level);
+        return this.itemsCommentsMapper.selectCountByExample(exp);
+    }
+
+    @Override
+    public PagedResult getComments(Map<String, Object> map, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+
+        List<ItemCommentVO> comments = this.itemsMapperCustom.getCommentsByLevel(map);
+
+        for (ItemCommentVO c : comments)
+            c.setNickname(PIIUtils.hashDisplay(c.getNickname()));
+
+        PageInfo<?> pageInfo = new PageInfo<>(comments);
+        PagedResult pageRes = new PagedResult();
+
+        pageRes.setPage(pageNum);
+        pageRes.setRows(comments);
+        pageRes.setTotal(pageInfo.getPages());
+        pageRes.setRecords(pageInfo.getTotal());
+
+        return pageRes;
+    }
+
 
     private <T> T queryOneHelper(Class clz, MyMapper mapper, String col, String val) {
         Example exp = new Example(clz);
