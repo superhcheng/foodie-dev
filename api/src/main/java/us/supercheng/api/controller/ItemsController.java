@@ -70,4 +70,56 @@ public class ItemsController extends BaseController {
 
         return APIResponse.ok(this.itemsService.getComments(map, page, pageSize));
     }
+
+
+    @GetMapping("search")
+    public APIResponse getItemsSearchResultsByKeywords(@RequestParam(required = false) String keywords,
+                                             @RequestParam(required = false) String sort,
+                                             @RequestParam(required = false) Integer page,
+                                             @RequestParam(required = false) Integer pageSize) {
+        if (keywords == null)
+            keywords = "";
+        else
+            keywords = "%" + keywords + "%";
+
+        if (sort == null)
+            sort = "k";
+
+        if (page == null)
+            page = DEFAULT_PAGE;
+
+        if (pageSize == null)
+            pageSize = DEFAULT_PAGE_SIZE;
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("keywords", keywords);
+        map.put("sort", sort);
+
+        return APIResponse.ok(this.itemsService.doSearchByKeywordsAndCatId(map, page, pageSize));
+    }
+
+
+    @GetMapping("/catItems")
+    public APIResponse getItemsSearchResultsByCatId(@RequestParam(required = false) String catId,
+                                             @RequestParam(required = false) String sort,
+                                             @RequestParam(required = false) Integer page,
+                                             @RequestParam(required = false) Integer pageSize) {
+        if (catId == null)
+            catId = "";
+
+        if (sort == null)
+            sort = "k";
+
+        if (page == null)
+            page = DEFAULT_PAGE;
+
+        if (pageSize == null)
+            pageSize = DEFAULT_PAGE_SIZE;
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("catId", catId);
+        map.put("sort", sort);
+
+        return APIResponse.ok(this.itemsService.doSearchByKeywordsAndCatId(map, page, pageSize));
+    }
 }

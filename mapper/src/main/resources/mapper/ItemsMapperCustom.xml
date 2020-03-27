@@ -2,21 +2,68 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="us.supercheng.mapper.ItemsMapperCustom" >
     <select id="getCommentsByLevel" resultType="us.supercheng.vo.ItemCommentVO" parameterType="Map">
-    SELECT
-        u.nickname as `nickname`,
-        u.face as `userFace`,
-        c.sepc_name as `specName`,
-        c.content as `content`,
-        c.created_time as `createdTime`
-    FROM
-        items i
-    LEFT JOIN items_comments c ON i.id = c.item_id
-    LEFT JOIN users u on c.user_id = u.id
-    WHERE
-        i.id = #{paraMap.id}
-    <if test="paraMap.level != null and paraMap.level != ''">
-        AND
-        c.comment_level = #{paraMap.level}
+        SELECT
+            u.nickname as `nickname`,
+            u.face as `userFace`,
+            c.sepc_name as `specName`,
+            c.content as `content`,
+            c.created_time as `createdTime`
+        FROM
+            items i
+        LEFT JOIN items_comments c ON i.id = c.item_id
+        LEFT JOIN users u on c.user_id = u.id
+        WHERE
+            i.id = #{paraMap.id}
+        <if test="paraMap.level != null and paraMap.level != ''">
+            AND
+            c.comment_level = #{paraMap.level}
     </if>
     </select>
+
+    <select id="doSearchByKeywordsAndCatId" resultType="us.supercheng.vo.ItemSearchResVO" parameterType="Map">
+        SELECT
+            i.id as `itemId`,
+            i.item_name as `itemName`,
+            i.sell_counts as `sellCounts`,
+            temp.price as `price`,
+            img.url as `imgUrl`
+        FROM items i
+        LEFT JOIN items_img img on i.id = img.item_id
+        LEFT JOIN (
+            SELECT
+                spec.item_id as `item_id`,
+                min(spec.price_discount) as `price`
+            FROM items_spec spec
+            GROUP BY spec.item_id
+        ) temp on temp.item_id = i.id
+
+        WHERE
+            img.is_main = 1
+
+        <if test="paraMap.keywords != null and paraMap.keywords != ''">
+            AND
+                i.item_name LIKE #{paraMap.keywords}
+        </if>
+
+        <if test="paraMap.catId != null and paraMap.catId != ''">
+            AND
+            i.cat_id = #{paraMap.catId}
+        </if>
+
+        ORDER BY
+        <choose>
+            <when test="paraMap.sort == &quot;p&quot;">
+                temp.price
+            </when>
+            <when test="paraMap.sort == &quot;c&quot;">
+                i.sell_counts DESC
+            </when>
+            <otherwise>
+                i.item_name
+            </otherwise>
+        </choose>
+    </select>
+    <!-- k: name default -->
+    <!-- c: sell_count desc -->
+    <!-- p: min price desc -->
 </mapper>

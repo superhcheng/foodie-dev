@@ -9,6 +9,20 @@ public class PagedResult {
 	private long records;		// total record counts
 	private List<?> rows;		// data collection
 
+	public PagedResult() {
+		this.page = 0;
+		this.total = 0;
+		this.records = 0;
+		this.rows = null;
+	}
+
+	public PagedResult(int page, int total, long records, List<?> rows) {
+		this.page = page;
+		this.total = total;
+		this.records = records;
+		this.rows = rows;
+	}
+
 	public int getPage() {
 		return page;
 	}

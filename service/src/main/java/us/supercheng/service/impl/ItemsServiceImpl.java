@@ -16,6 +16,7 @@ import us.supercheng.utils.PIIUtils;
 import us.supercheng.utils.PagedResult;
 import us.supercheng.vo.ItemCommentVO;
 import us.supercheng.vo.ItemCommentsSummaryVO;
+import us.supercheng.vo.ItemSearchResVO;
 import java.util.List;
 import java.util.Map;
 
@@ -93,14 +94,18 @@ public class ItemsServiceImpl implements ItemsService {
             c.setNickname(PIIUtils.hashDisplay(c.getNickname()));
 
         PageInfo<?> pageInfo = new PageInfo<>(comments);
-        PagedResult pageRes = new PagedResult();
 
-        pageRes.setPage(pageNum);
-        pageRes.setRows(comments);
-        pageRes.setTotal(pageInfo.getPages());
-        pageRes.setRecords(pageInfo.getTotal());
+        return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(),comments);
+    }
 
-        return pageRes;
+    @Override
+    public PagedResult doSearchByKeywordsAndCatId(Map<String, Object> map, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+
+        List<ItemSearchResVO> items = this.itemsMapperCustom.doSearchByKeywordsAndCatId(map);
+        PageInfo<?> pageInfo = new PageInfo<>(items);
+
+        return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(), items);
     }
 
 

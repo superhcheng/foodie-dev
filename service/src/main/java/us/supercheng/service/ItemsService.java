@@ -17,4 +17,5 @@ public interface ItemsService {
     ItemCommentsSummaryVO getItemCommentsSummary(String id);
     Integer getItemCommentCountByLevel(String id, Integer level);
     PagedResult getComments(Map<String, Object> map, Integer pageNum, Integer pageSize);
+    PagedResult doSearchByKeywordsAndCatId(Map<String, Object> map, Integer pageNum, Integer pageSize);
 }
