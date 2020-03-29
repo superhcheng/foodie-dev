@@ -6,6 +6,8 @@ import us.supercheng.pojo.ItemsParam;
 import us.supercheng.pojo.ItemsSpec;
 import us.supercheng.utils.PagedResult;
 import us.supercheng.vo.ItemCommentsSummaryVO;
+import us.supercheng.vo.ShopcartItemVO;
+
 import java.util.List;
 import java.util.Map;
 
@@ -18,4 +20,5 @@ public interface ItemsService {
     Integer getItemCommentCountByLevel(String id, Integer level);
     PagedResult getComments(Map<String, Object> map, Integer pageNum, Integer pageSize);
     PagedResult doSearchByKeywordsAndCatId(Map<String, Object> map, Integer pageNum, Integer pageSize);
+    List<ShopcartItemVO> getItemsBySpecIds(List<String> ids);
 }

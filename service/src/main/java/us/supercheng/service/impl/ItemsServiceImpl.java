@@ -2,6 +2,7 @@ package us.supercheng.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -17,6 +18,8 @@ import us.supercheng.utils.PagedResult;
 import us.supercheng.vo.ItemCommentVO;
 import us.supercheng.vo.ItemCommentsSummaryVO;
 import us.supercheng.vo.ItemSearchResVO;
+import us.supercheng.vo.ShopcartItemVO;
+
 import java.util.List;
 import java.util.Map;
 
@@ -91,7 +94,8 @@ public class ItemsServiceImpl implements ItemsService {
         List<ItemCommentVO> comments = this.itemsMapperCustom.getCommentsByLevel(map);
 
         for (ItemCommentVO c : comments)
-            c.setNickname(PIIUtils.hashDisplay(c.getNickname()));
+            if (!StringUtils.isBlank(c.getNickname()))
+                c.setNickname(PIIUtils.hashDisplay(c.getNickname()));
 
         PageInfo<?> pageInfo = new PageInfo<>(comments);
 
@@ -106,6 +110,11 @@ public class ItemsServiceImpl implements ItemsService {
         PageInfo<?> pageInfo = new PageInfo<>(items);
 
         return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(), items);
+    }
+
+    @Override
+    public List<ShopcartItemVO> getItemsBySpecIds(List<String> ids) {
+        return this.itemsMapperCustom.getItemsBySpecIds(ids);
     }
 
 

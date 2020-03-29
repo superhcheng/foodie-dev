@@ -1,5 +1,6 @@
 package us.supercheng.api.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import us.supercheng.pojo.Items;
@@ -9,6 +10,8 @@ import us.supercheng.pojo.ItemsSpec;
 import us.supercheng.service.ItemsService;
 import us.supercheng.utils.APIResponse;
 import us.supercheng.vo.ItemsInfoVO;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,5 +124,14 @@ public class ItemsController extends BaseController {
         map.put("sort", sort);
 
         return APIResponse.ok(this.itemsService.doSearchByKeywordsAndCatId(map, page, pageSize));
+    }
+
+    @GetMapping("refresh")
+    public APIResponse shopcartItemRefresh(@RequestParam String itemSpecIds) {
+        if (StringUtils.isBlank(itemSpecIds))
+            return APIResponse.ok();
+
+        String[] arr = itemSpecIds.split(",");
+        return APIResponse.ok(this.itemsService.getItemsBySpecIds(Arrays.asList(arr)));
     }
 }

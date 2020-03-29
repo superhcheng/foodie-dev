@@ -52,10 +52,10 @@
 
         ORDER BY
         <choose>
-            <when test="paraMap.sort == &quot;p&quot;">
+            <when test='paraMap.sort == "p"'>
                 temp.price
             </when>
-            <when test="paraMap.sort == &quot;c&quot;">
+            <when test='paraMap.sort == "c"'>
                 i.sell_counts DESC
             </when>
             <otherwise>
@@ -66,4 +66,28 @@
     <!-- k: name default -->
     <!-- c: sell_count desc -->
     <!-- p: min price desc -->
+
+    <select id="getItemsBySpecIds" resultType="us.supercheng.vo.ShopcartItemVO" parameterType="List">
+        SELECT
+            i.id as `itemId`,
+            img.url as `itemImgUrl`,
+            i.item_name as `itemName`,
+            spec.id as `specId`,
+            spec.`name` as `specName`,
+            spec.price_discount as `priceDiscount`,
+            spec.price_normal as `priceNormal`
+        FROM
+            items i
+        LEFT JOIN
+            items_img img ON i.id = img.item_id
+        LEFT JOIN
+            items_spec spec on i.id = spec.item_id
+        WHERE
+                img.is_main = 1
+            AND
+            spec.id in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
 </mapper>
