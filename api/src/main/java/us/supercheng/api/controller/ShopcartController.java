@@ -27,4 +27,15 @@ public class ShopcartController {
 
         return APIResponse.ok();
     }
+
+    @PostMapping("del")
+    @ResponseBody
+    public APIResponse delShopcartItemBySpecId(@RequestParam String userId,
+                                               @RequestParam String itemSpecId) {
+        if (StringUtils.isBlank(userId))
+            return APIResponse.errorMsg("Missing required fields User ID and/or Item Spec ID");
+        // TODO delete from Redis once we have Redis integrations implemented
+
+        return APIResponse.ok();
+    }
 }
