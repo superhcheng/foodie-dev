@@ -9,4 +9,5 @@ public interface AddressService {
     boolean createAddr(UserAddress addr);
     boolean updateAddr(UserAddress addr);
     boolean deleteUserAddr(String userId, String addressId);
+    UserAddress getUserAddressByUserIdAndAddressId(String userId, String addressId);
 }

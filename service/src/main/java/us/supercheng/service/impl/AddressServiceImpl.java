@@ -78,4 +78,17 @@ public class AddressServiceImpl implements AddressService {
             return false;
         }
     }
+
+    @Override
+    public UserAddress getUserAddressByUserIdAndAddressId(String userId, String addressId) {
+        UserAddress userAddress = new UserAddress();
+        userAddress.setUserId(userId);
+        userAddress.setId(addressId);
+
+        try {
+            return this.addressMapper.selectOne(userAddress);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 }
