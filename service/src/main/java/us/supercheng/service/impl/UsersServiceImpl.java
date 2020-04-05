@@ -13,7 +13,6 @@ import us.supercheng.pojo.Users;
 import us.supercheng.service.UsersService;
 import us.supercheng.utils.DateUtil;
 import us.supercheng.utils.MD5Utils;
-
 import java.util.Date;
 
 @Service
@@ -73,6 +72,4 @@ public class UsersServiceImpl implements UsersService {
 
         return this.usersMapper.selectOneByExample(userExp);
     }
-
-
 }

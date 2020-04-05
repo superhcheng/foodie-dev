@@ -79,16 +79,16 @@ public class AddressServiceImpl implements AddressService {
         }
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public UserAddress getUserAddressByUserIdAndAddressId(String userId, String addressId) {
         UserAddress userAddress = new UserAddress();
         userAddress.setUserId(userId);
         userAddress.setId(addressId);
-
         try {
             return this.addressMapper.selectOne(userAddress);
         } catch (Exception ex) {
-            return null;
+            throw ex;
         }
     }
 }

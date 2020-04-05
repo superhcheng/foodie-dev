@@ -1,7 +1,9 @@
 package us.supercheng.service;
 
 import us.supercheng.bo.SubmitOrderBO;
+import us.supercheng.vo.OrderVO;
 
 public interface OrderService {
-    boolean createOrder(SubmitOrderBO submitOrderBO);
+    OrderVO createOrder(SubmitOrderBO submitOrderBO);
+    void updateOrderStatus(String orderId, Integer orderStatus);
 }

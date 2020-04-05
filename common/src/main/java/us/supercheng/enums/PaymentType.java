@@ -2,8 +2,8 @@ package us.supercheng.enums;
 
 public enum PaymentType {
 
-    Alipay(1, "Alipay"),
-    WechatPay(2, "Wechat Pay");
+    WechatPay(1, "Wechat Pay"),
+    Alipay(2, "Alipay");
 
     public Integer type;
     public String value;

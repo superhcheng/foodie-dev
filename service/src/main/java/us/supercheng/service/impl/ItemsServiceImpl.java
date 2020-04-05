@@ -19,7 +19,6 @@ import us.supercheng.vo.ItemCommentVO;
 import us.supercheng.vo.ItemCommentsSummaryVO;
 import us.supercheng.vo.ItemSearchResVO;
 import us.supercheng.vo.ShopcartItemVO;
-
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +58,18 @@ public class ItemsServiceImpl implements ItemsService {
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
+    public ItemsImg getItemsImgMainByItemId(String id) {
+        List<ItemsImg> imgs = this.itemsMapperCustom.getItemsImgMainByItemId(id);
+
+        for (ItemsImg img : imgs)
+            if (!StringUtils.isBlank(img.getUrl()))
+                return img;
+
+        return null;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
     public List<ItemsSpec> queryItemSpacListByItemId(String id) {
         return this.queryManyHelper(ItemsSpec.class, this.itemsSpecMapper, "itemId", id);
     }
@@ -69,6 +80,7 @@ public class ItemsServiceImpl implements ItemsService {
         return this.queryOneHelper(ItemsParam.class, this.itemsParamMapper, "itemId", id);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public ItemCommentsSummaryVO getItemCommentsSummary(String id) {
         return new ItemCommentsSummaryVO(
@@ -78,6 +90,7 @@ public class ItemsServiceImpl implements ItemsService {
             );
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public Integer getItemCommentCountByLevel(String id, Integer level) {
         Example exp = new Example(ItemsComments.class);
@@ -87,6 +100,7 @@ public class ItemsServiceImpl implements ItemsService {
         return this.itemsCommentsMapper.selectCountByExample(exp);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public PagedResult getComments(Map<String, Object> map, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
@@ -102,6 +116,7 @@ public class ItemsServiceImpl implements ItemsService {
         return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(),comments);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public PagedResult doSearchByKeywordsAndCatId(Map<String, Object> map, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
@@ -112,11 +127,35 @@ public class ItemsServiceImpl implements ItemsService {
         return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(), items);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public List<ShopcartItemVO> getItemsBySpecIds(List<String> ids) {
         return this.itemsMapperCustom.getItemsBySpecIds(ids);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public ItemsSpec getItemsSpecByItemsSpecId(String id) {
+        ItemsSpec itemsSpec = new ItemsSpec();
+        itemsSpec.setId(id);
+        return this.itemsSpecMapper.selectOne(itemsSpec);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public Items getItemsByItemsId(String id) {
+        Items items = new Items();
+        items.setId(id);
+        return this.itemsMapper.selectOne(items);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void updateItemsSpecCount(Map<String, Object> map) {
+        if (this.itemsMapperCustom.updateItemsSpecCount(map) != 1) {
+            throw new RuntimeException("Invalid transaction due to low stock inventory");
+        }
+    }
 
     private <T> T queryOneHelper(Class clz, MyMapper mapper, String col, String val) {
         Example exp = new Example(clz);

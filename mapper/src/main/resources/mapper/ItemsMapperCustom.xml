@@ -90,4 +90,32 @@
                 #{item}
             </foreach>
     </select>
+
+    <select id="getItemsImgMainByItemId" resultType="us.supercheng.pojo.ItemsImg" parameterType="String">
+        SELECT
+            id as `id`,
+            item_id as `itemId`,
+            url as `url`,
+            sort as `sort`,
+            is_main as `isMain`,
+            created_time as `createdTime`,
+            updated_time as `updatedTime`
+        from
+            items_img
+        WHERE
+                item_id = #{itemId}
+            AND
+                is_main = 1;
+    </select>
+
+    <update id="updateItemsSpecCount" parameterType="map">
+        UPDATE
+            items_spec
+        SET
+            stock = stock - #{paraMap.amt}
+        WHERE
+            id = #{paraMap.specId}
+            AND
+            stock >= #{paraMap.amt}
+    </update>
 </mapper>
