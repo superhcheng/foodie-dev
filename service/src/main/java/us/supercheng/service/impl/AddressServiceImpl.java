@@ -15,26 +15,22 @@ public class AddressServiceImpl implements AddressService {
     @Autowired
     private UserAddressMapper addressMapper;
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     @Override
     public boolean setUserDefaultShippingAddr(String userId, String addressId) {
-        try {
-            UserAddress userAddress = new UserAddress();
-            userAddress.setUserId(userId);
-            userAddress.setIsDefault(1);
+        UserAddress userAddress = new UserAddress();
+        userAddress.setUserId(userId);
+        userAddress.setIsDefault(1);
 
-            for (UserAddress ua : this.addressMapper.select(userAddress)) {
-                ua.setIsDefault(0);
-                this.addressMapper.updateByPrimaryKeySelective(ua);
-            }
-
-            userAddress = new UserAddress();
-            userAddress.setId(addressId);
-            userAddress.setIsDefault(1);
-            return this.addressMapper.updateByPrimaryKeySelective(userAddress) == 1;
-        } catch (Exception ex) {
-            return false;
+        for (UserAddress ua : this.addressMapper.select(userAddress)) {
+            ua.setIsDefault(0);
+            this.addressMapper.updateByPrimaryKeySelective(ua);
         }
+
+        userAddress = new UserAddress();
+        userAddress.setId(addressId);
+        userAddress.setIsDefault(1);
+        return this.addressMapper.updateByPrimaryKeySelective(userAddress) == 1;
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -45,38 +41,25 @@ public class AddressServiceImpl implements AddressService {
         return this.addressMapper.select(addr);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     @Override
     public boolean createAddr(UserAddress addr) {
-        try {
-            return this.addressMapper.insert(addr) == 1;
-        } catch (Exception ex) {
-            return false;
-        }
+        return this.addressMapper.insert(addr) == 1;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     @Override
     public boolean updateAddr(UserAddress addr) {
-        try {
-            return this.addressMapper.updateByPrimaryKeySelective(addr) == 1;
-        } catch (Exception ex) {
-            return false;
-        }
+        return this.addressMapper.updateByPrimaryKeySelective(addr) == 1;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     @Override
     public boolean deleteUserAddr(String userId, String addressId) {
         UserAddress userAddress = new UserAddress();
         userAddress.setUserId(userId);
         userAddress.setId(addressId);
-
-        try {
-            return this.addressMapper.delete(userAddress) == 1;
-        } catch (Exception ex) {
-            return false;
-        }
+        return this.addressMapper.delete(userAddress) == 1;
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -85,10 +68,6 @@ public class AddressServiceImpl implements AddressService {
         UserAddress userAddress = new UserAddress();
         userAddress.setUserId(userId);
         userAddress.setId(addressId);
-        try {
-            return this.addressMapper.selectOne(userAddress);
-        } catch (Exception ex) {
-            throw ex;
-        }
+        return this.addressMapper.selectOne(userAddress);
     }
 }

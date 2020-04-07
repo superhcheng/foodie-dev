@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import us.supercheng.bo.SubmitOrderBO;
 import us.supercheng.enums.OrderStatusEnum;
 import us.supercheng.enums.PaymentType;
+import us.supercheng.pojo.OrderStatus;
 import us.supercheng.service.ItemsService;
 import us.supercheng.service.OrderService;
 import us.supercheng.utils.APIResponse;
@@ -62,12 +63,12 @@ public class OrderController extends BaseController {
 
         APIResponse resp = respEntity.getBody();
         if (resp == null || resp.getStatus() != 200) {
-            return APIResponse.errorMsg("Interval error......");
+            return APIResponse.errorMsg("Interval Payment error......");
         }
 
         // Update Shopping Card
 
-        return APIResponse.ok();
+        return APIResponse.ok(orderVO.getOrders().getId());
     }
 
     @PostMapping("notifyMerchantOrderPaid")
@@ -75,19 +76,20 @@ public class OrderController extends BaseController {
         if (StringUtils.isBlank(merchantOrderId))
             return HttpStatus.BAD_REQUEST.value();
 
-        try {
-            this.orderService.updateOrderStatus(merchantOrderId, OrderStatusEnum.WAIT_DELIVER.type);
-        } catch (Exception ex) {
-            return HttpStatus.INTERNAL_SERVER_ERROR.value();
-        }
-
+        this.orderService.updateOrderStatus(merchantOrderId, OrderStatusEnum.WAIT_DELIVER.type);
         return HttpStatus.OK.value();
     }
 
+    @PostMapping("getPaidOrderInfo")
+    public APIResponse getPaidOrderInfo(@RequestParam String orderId) {
+        if (StringUtils.isBlank(orderId))
+            return APIResponse.errorMsg("Missing required argument Order Id");
 
+        OrderStatus orderStatus = this.orderService.getOrderStatusByOrderId(orderId);
 
-    @GetMapping("test")
-    public APIResponse test() {
-        return APIResponse.ok(this.itemsService.getItemsImgMainByItemId("cake-1001"));
+        if (orderStatus == null)
+            return APIResponse.errorMsg("No such Order Id");
+
+        return APIResponse.ok(orderStatus);
     }
 }

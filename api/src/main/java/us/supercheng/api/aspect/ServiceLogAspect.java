@@ -18,31 +18,25 @@ public class ServiceLogAspect {
         String className = joinPoint.getTarget().getClass().getName(),
                 name = joinPoint.getSignature().getName();
 
-        LOG.info("====== Execute {}.{} ======",
-                className,
-                name);
-
+        LOG.info("====== Execute {}.{} ======", className, name);
         long start = System.currentTimeMillis();
         Object ret = null;
 
         try {
             ret = joinPoint.proceed();
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            throw new RuntimeException(throwable.getMessage());
         }
 
         long end = System.currentTimeMillis();
         long res = end - start;
 
-        if (res > 3000) {
+        if (res > 3000)
             LOG.error("====== ERROR - Execute {}.{} ======" + res, className, name);
-
-        } else if (res > 2500) {
+        else if (res > 2500)
             LOG.warn("====== WARN - Execute {}.{} ======" + res, className, name);
-
-        } else {
+        else
             LOG.info("====== OK - Execute {}.{} ======" + res, className, name);
-        }
 
         return ret;
     }

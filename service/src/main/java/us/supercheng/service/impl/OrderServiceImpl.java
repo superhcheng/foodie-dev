@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import us.supercheng.bo.SubmitOrderBO;
 import us.supercheng.enums.OrderStatusEnum;
@@ -22,7 +23,8 @@ import java.util.*;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    String payReturnUrl = "http://api.z.mukewang.com/foodie-dev-api/orders/notifyMerchantOrderPaid";
+    //String payReturnUrl = "http://api.z.mukewang.com/foodie-dev-api/orders/notifyMerchantOrderPaid";
+    String payReturnUrl = "http://5v8tx9.natappfree.cc/orders/notifyMerchantOrderPaid";
 
     @Autowired
     private Sid sid;
@@ -130,11 +132,7 @@ public class OrderServiceImpl implements OrderService {
                     Map<String, Object> map = new HashMap<>();
                     map.put("specId", specId);
                     map.put("amt", 1);
-                    try {
-                        this.itemsService.updateItemsSpecCount(map);
-                    } catch (Exception ex) {
-                        throw ex;
-                    }
+                    this.itemsService.updateItemsSpecCount(map);
                 }
             }
         }
@@ -147,7 +145,8 @@ public class OrderServiceImpl implements OrderService {
 
         // money
         order.setTotalAmount(totalAmt);
-        order.setRealPayAmount(actualAmt);
+        //order.setRealPayAmount(actualAmt);
+        order.setRealPayAmount(1);
         order.setPostAmount(postAmt);
 
         order.setIsComment(YesOrNo.No.type);
@@ -158,7 +157,7 @@ public class OrderServiceImpl implements OrderService {
         this.ordersMapper.insert(order);
 
         MerchantOrdersVO merchantOrdersVO = new MerchantOrdersVO();
-        merchantOrdersVO.setAmount(actualAmt + postAmt);
+        merchantOrdersVO.setAmount(order.getRealPayAmount());
         merchantOrdersVO.setMerchantOrderId(orderId);
         merchantOrdersVO.setMerchantUserId(userId);
         merchantOrdersVO.setPayMethod(submitOrderBO.getPayMethod());
@@ -179,5 +178,11 @@ public class OrderServiceImpl implements OrderService {
         os.setOrderStatus(orderStatus);
         os.setPayTime(new Date());
         this.orderStatusMapper.updateByPrimaryKeySelective(os);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public OrderStatus getOrderStatusByOrderId(String id) {
+        return this.orderStatusMapper.selectByPrimaryKey(id);
     }
 }

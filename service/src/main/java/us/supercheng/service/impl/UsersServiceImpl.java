@@ -34,7 +34,7 @@ public class UsersServiceImpl implements UsersService {
         return users != null;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     @Override
     public Users createUser(UserBO user) {
         Users ret = new Users();
