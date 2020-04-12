@@ -8,4 +8,5 @@ public interface OrderService {
     OrderVO createOrder(SubmitOrderBO submitOrderBO);
     void updateOrderStatus(String orderId, Integer orderStatus);
     OrderStatus getOrderStatusByOrderId(String id);
+    void closeExpiredOrders();
 }

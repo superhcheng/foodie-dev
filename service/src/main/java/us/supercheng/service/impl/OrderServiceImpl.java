@@ -16,6 +16,7 @@ import us.supercheng.pojo.*;
 import us.supercheng.service.AddressService;
 import us.supercheng.service.ItemsService;
 import us.supercheng.service.OrderService;
+import us.supercheng.utils.DateUtil;
 import us.supercheng.vo.MerchantOrdersVO;
 import us.supercheng.vo.OrderVO;
 import java.util.*;
@@ -24,7 +25,7 @@ import java.util.*;
 public class OrderServiceImpl implements OrderService {
 
     //String payReturnUrl = "http://api.z.mukewang.com/foodie-dev-api/orders/notifyMerchantOrderPaid";
-    String payReturnUrl = "http://5v8tx9.natappfree.cc/orders/notifyMerchantOrderPaid";
+    String payReturnUrl = "http://jd2ka6.natappfree.cc/orders/notifyMerchantOrderPaid";
 
     @Autowired
     private Sid sid;
@@ -184,5 +185,21 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderStatus getOrderStatusByOrderId(String id) {
         return this.orderStatusMapper.selectByPrimaryKey(id);
+    }
+
+    @Transactional
+    @Override
+    public void closeExpiredOrders() {
+        Date now = new Date();
+        OrderStatus orderStatus = new OrderStatus();
+        orderStatus.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
+        List<OrderStatus> orderStatusList = this.orderStatusMapper.select(orderStatus);
+        for (OrderStatus os : orderStatusList) {
+            if (DateUtil.daysBetween(os.getCreatedTime(), now) >= 1) {
+                os.setCloseTime(now);
+                os.setOrderStatus(OrderStatusEnum.CLOSE.type);
+                this.orderStatusMapper.updateByPrimaryKeySelective(os);
+            }
+        }
     }
 }
