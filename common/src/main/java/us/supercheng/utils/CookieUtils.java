@@ -14,8 +14,9 @@ import java.net.URLEncoder;
 public final class CookieUtils {
 
     final static Logger logger = LoggerFactory.getLogger(CookieUtils.class);
-	
-	/**
+    public final static String USER_COOKIE_KEY = "user";
+
+    /**
 	 * 
 	 * @Description: 得到Cookie的值, 不编码
 	 * @param request

@@ -13,6 +13,6 @@ public class SchedulerTasks {
 
     @Scheduled(cron = "0/3 * * * * ? ")
     public void closeOrders() {
-        this.orderService.closeExpiredOrders();
+        //this.orderService.closeExpiredOrders();
     }
 }

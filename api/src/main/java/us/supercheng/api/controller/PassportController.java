@@ -81,12 +81,12 @@ public class PassportController {
         user.setPassword(null);
         user.setBirthday(null);
         user.setRealname(null);
-        CookieUtils.setCookie(req, resp, "user", JsonUtils.objectToJson(user), true);
+        CookieUtils.setCookie(req, resp, CookieUtils.USER_COOKIE_KEY, JsonUtils.objectToJson(user), true);
     }
 
     @PostMapping("logout")
     public APIResponse logout(HttpServletRequest req, HttpServletResponse resp) {
-        CookieUtils.deleteCookie(req, resp, "user");
+        CookieUtils.deleteCookie(req, resp, CookieUtils.USER_COOKIE_KEY);
         return APIResponse.ok();
     }
 }
