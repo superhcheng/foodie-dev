@@ -19,6 +19,7 @@ public class WebMVCConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:META-INF/resources/")          // Swagger2
                 .addResourceLocations("file:/Users/cheng/dev/static-files/foodie-dev/avatars/");
     }
 }

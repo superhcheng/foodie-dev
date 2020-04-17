@@ -14,11 +14,13 @@ import us.supercheng.pojo.Users;
 import us.supercheng.service.center.CenterUsersService;
 import us.supercheng.utils.APIResponse;
 import us.supercheng.utils.CookieUtils;
+import us.supercheng.utils.DateUtil;
 import us.supercheng.utils.JsonUtils;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.*;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,11 +80,12 @@ public class CenterUserController {
                 !fileExtenstion.equalsIgnoreCase("jpeg"))
             return APIResponse.errorMsg(fileExtenstion + " format is not supported, please upload png, jpg, or jpeg format");
 
-        String imgPath = this.fileUpload.getUserAvatarLocation() + File.separator + "avatar-" + userId + "." + fileExtenstion;
+        String fileFullName = "avatar-" + userId + "." + fileExtenstion,
+               imgPath = this.fileUpload.getUserAvatarLocation() + File.separator + fileFullName;
+
         File imgFile = new File(imgPath);
         if (imgFile.getParentFile() != null)
             imgFile.getParentFile().mkdirs();
-
 
         try (FileOutputStream fos = new FileOutputStream(imgFile)) {
             IOUtils.copy(file.getInputStream(), fos);
@@ -91,7 +94,7 @@ public class CenterUserController {
             return APIResponse.errorMsg("Internal Server File Error");
         }
 
-
+        this.centerUsersService.updateAvatarByUserId(userId, this.fileUpload.getImgServerUrl() + fileFullName + "?t=" + DateUtil.getCurrentDateString(DateUtil.DATE_PATTERN));
         return APIResponse.ok("File Uploaded");
     }
 
@@ -103,7 +106,6 @@ public class CenterUserController {
         user.setUpdatedTime(null);
         user.setBirthday(null);
     }
-
 
     private Map<String, String> resToMap(BindingResult result) {
         Map<String, String> ret = new HashMap<>();

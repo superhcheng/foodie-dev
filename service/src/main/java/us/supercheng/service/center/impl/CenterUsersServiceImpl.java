@@ -37,9 +37,25 @@ public class CenterUsersServiceImpl implements CenterUsersService {
 
         int res = this.usersMapper.updateByPrimaryKeySelective(u);
 
-        if (res != 1) {
+        if (res != 1)
             throw new RuntimeException("No such user exist.");
-        }
+
+        return this.getUserByUserId(userId);
+    }
+
+    @Transactional
+    @Override
+    public Users updateAvatarByUserId(String userId, String url) {
+        Users u = new Users();
+
+        u.setId(userId);
+        u.setFace(url);
+        u.setUpdatedTime(new Date());
+
+        int res = this.usersMapper.updateByPrimaryKeySelective(u);
+
+        if (res != 1)
+            throw new RuntimeException("No such user exist.");
 
         return this.getUserByUserId(userId);
     }
