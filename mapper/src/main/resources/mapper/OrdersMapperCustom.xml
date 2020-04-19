@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="us.supercheng.mapper.OrdersMapperCustom" >
+
+    <select id="query" resultType="us.supercheng.vo.MyOrdersVO" parameterType="Map">
+        SELECT
+            o.id AS orderId,
+            o.created_time AS createdTime,
+            o.pay_method AS payMethod,
+            o.real_pay_amount AS realPayAmount,
+            o.post_amount AS postAmount,
+            o.is_comment AS isComment,
+            os.order_status AS orderStatus
+        FROM orders AS o
+        LEFT JOIN order_status AS os ON o.id = os.order_id
+        WHERE
+        	o.is_delete = 0
+        AND
+            o.user_id = #{paraMap.userId}
+        <if test="paraMap.containsKey('orderStatus') and paraMap.orderStatus != null and paraMap.orderStatus !=''">
+            AND
+            os.order_status = #{paraMap.orderStatus}
+        </if>
+    </select>
+
+    <!--
+
+    <select id="getCommentsByLevel" resultType="us.supercheng.vo.ItemCommentVO" parameterType="Map">
+        SELECT
+            u.nickname as `nickname`,
+            u.face as `userFace`,
+            c.sepc_name as `specName`,
+            c.content as `content`,
+            c.created_time as `createdTime`
+        FROM
+            items i
+        LEFT JOIN items_comments c ON i.id = c.item_id
+        LEFT JOIN users u on c.user_id = u.id
+        WHERE
+            i.id = #{paraMap.id}
+        <if test="paraMap.level != null and paraMap.level != ''">
+            AND
+            c.comment_level = #{paraMap.level}
+    </if>
+    </select>
+
+    <select id="doSearchByKeywordsAndCatId" resultType="us.supercheng.vo.ItemSearchResVO" parameterType="Map">
+        SELECT
+            i.id as `itemId`,
+            i.item_name as `itemName`,
+            i.sell_counts as `sellCounts`,
+            temp.price as `price`,
+            img.url as `imgUrl`
+        FROM items i
+        LEFT JOIN items_img img on i.id = img.item_id
+        LEFT JOIN (
+            SELECT
+                spec.item_id as `item_id`,
+                min(spec.price_discount) as `price`
+            FROM items_spec spec
+            GROUP BY spec.item_id
+        ) temp on temp.item_id = i.id
+
+        WHERE
+            img.is_main = 1
+
+        <if test="paraMap.keywords != null and paraMap.keywords != ''">
+            AND
+                i.item_name LIKE #{paraMap.keywords}
+        </if>
+
+        <if test="paraMap.catId != null and paraMap.catId != ''">
+            AND
+            i.cat_id = #{paraMap.catId}
+        </if>
+
+        ORDER BY
+        <choose>
+            <when test='paraMap.sort == "p"'>
+                temp.price
+            </when>
+            <when test='paraMap.sort == "c"'>
+                i.sell_counts DESC
+            </when>
+            <otherwise>
+                i.item_name
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getItemsBySpecIds" resultType="us.supercheng.vo.ShopcartItemVO" parameterType="List">
+        SELECT
+            i.id as `itemId`,
+            img.url as `itemImgUrl`,
+            i.item_name as `itemName`,
+            spec.id as `specId`,
+            spec.`name` as `specName`,
+            spec.price_discount as `priceDiscount`,
+            spec.price_normal as `priceNormal`
+        FROM
+            items i
+        LEFT JOIN
+            items_img img ON i.id = img.item_id
+        LEFT JOIN
+            items_spec spec on i.id = spec.item_id
+        WHERE
+                img.is_main = 1
+            AND
+            spec.id in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+
+    <select id="getItemsImgMainByItemId" resultType="us.supercheng.pojo.ItemsImg" parameterType="String">
+        SELECT
+            id as `id`,
+            item_id as `itemId`,
+            url as `url`,
+            sort as `sort`,
+            is_main as `isMain`,
+            created_time as `createdTime`,
+            updated_time as `updatedTime`
+        from
+            items_img
+        WHERE
+                item_id = #{itemId}
+            AND
+                is_main = 1;
+    </select>
+
+    <update id="updateItemsSpecCount" parameterType="map">
+        UPDATE
+            items_spec
+        SET
+            stock = stock - #{paraMap.amt}
+        WHERE
+            id = #{paraMap.specId}
+            AND
+            stock >= #{paraMap.amt}
+    </update>
+
+    -->
+</mapper>
