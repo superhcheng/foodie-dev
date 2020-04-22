@@ -1,7 +1,6 @@
 package us.supercheng.service.center.impl;
 
 import com.github.pagehelper.PageInfo;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -9,16 +8,16 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import us.supercheng.enums.OrderStatusEnum;
 import us.supercheng.enums.YesOrNo;
+import us.supercheng.mapper.OrderItemsMapper;
 import us.supercheng.mapper.OrderStatusMapper;
 import us.supercheng.mapper.OrdersMapper;
 import us.supercheng.mapper.OrdersMapperCustom;
-import us.supercheng.pojo.ItemsComments;
+import us.supercheng.pojo.OrderItems;
 import us.supercheng.pojo.OrderStatus;
 import us.supercheng.pojo.Orders;
 import us.supercheng.service.center.CenterOrderService;
 import us.supercheng.utils.PagedResult;
 import us.supercheng.vo.MyOrdersVO;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +34,9 @@ public class CenterOrderServiceImpl implements CenterOrderService {
 
     @Autowired
     private OrdersMapper ordersMapper;
+
+    @Autowired
+    private OrderItemsMapper orderItemsMapper;
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
@@ -88,5 +90,18 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         order.setUserId(userId);
         order.setIsDelete(YesOrNo.No.type);
         return this.ordersMapper.selectOne(order);
+    }
+
+    @Override
+    public List<OrderItems> getOrderItemsByOrderId(String orderId) {
+        OrderItems orderItems = new OrderItems();
+        orderItems.setOrderId(orderId);
+        return this.orderItemsMapper.select(orderItems);
+    }
+
+    @Override
+    public List<OrderItems> getReadyToCommentOrderItems(String userId, Integer pageNum, Integer pageSize) {
+
+        return null;
     }
 }
