@@ -1,5 +1,6 @@
 package us.supercheng.service.center;
 
+import us.supercheng.bo.center.OrderItemsCommentBO;
 import us.supercheng.pojo.OrderItems;
 import us.supercheng.pojo.Orders;
 import us.supercheng.utils.PagedResult;
@@ -13,4 +14,7 @@ public interface CenterOrderService {
     Orders getOrdersByUserIdAndOrderId(String orderId, String userId);
     List<OrderItems> getOrderItemsByOrderId(String orderId);
     List<OrderItems> getReadyToCommentOrderItems(String userId, Integer pageNum, Integer pageSize);
+    void insertItemsComments(String userId, List<OrderItemsCommentBO> orderItemsCommentBOs);
+    void markOrderCommented(String orderId);
+    void updateOrderStatusCommentTime(String orderId);
 }

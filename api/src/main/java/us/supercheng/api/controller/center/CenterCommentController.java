@@ -5,16 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import us.supercheng.api.controller.BaseController;
 import us.supercheng.bo.center.OrderItemsCommentBO;
-import us.supercheng.enums.OrderStatusEnum;
 import us.supercheng.enums.YesOrNo;
-import us.supercheng.pojo.OrderItems;
-import us.supercheng.pojo.OrderStatus;
 import us.supercheng.pojo.Orders;
 import us.supercheng.service.OrderService;
 import us.supercheng.service.center.CenterOrderService;
 import us.supercheng.utils.APIResponse;
-import us.supercheng.utils.PagedResult;
-
 import java.util.List;
 
 @RestController
@@ -57,14 +52,11 @@ public class CenterCommentController extends BaseController {
         if (orderItemList == null || orderItemList.isEmpty())
             return APIResponse.errorMsg("Make sure send in a valid OrderItem List");
 
-        for (OrderItemsCommentBO orderItemsCommentBO : orderItemList)
-            System.out.println(orderItemsCommentBO);
+        this.centerOrderService.insertItemsComments(userId, orderItemList);
+        this.centerOrderService.markOrderCommented(orderId);
+        this.centerOrderService.updateOrderStatusCommentTime(orderId);
 
-        // Save OrderItemComments
-
-        // Update Order to be Commented
-
-        return null;
+        return APIResponse.ok();
     }
 
     @PostMapping("query")

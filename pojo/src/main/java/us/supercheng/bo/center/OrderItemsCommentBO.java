@@ -69,7 +69,12 @@ public class OrderItemsCommentBO {
     @Override
     public String toString() {
         return "OrderItemsCommentBO{" +
-                "commentLevel=" + commentLevel +
+                "commentId='" + commentId + '\'' +
+                ", itemId='" + itemId + '\'' +
+                ", itemName='" + itemName + '\'' +
+                ", itemSpecId='" + itemSpecId + '\'' +
+                ", itemSpecName='" + itemSpecName + '\'' +
+                ", commentLevel=" + commentLevel +
                 ", content='" + content + '\'' +
                 '}';
     }

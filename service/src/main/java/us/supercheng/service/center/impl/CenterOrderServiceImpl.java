@@ -1,17 +1,18 @@
 package us.supercheng.service.center.impl;
 
 import com.github.pagehelper.PageInfo;
+import org.aspectj.weaver.ast.Or;
+import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
+import us.supercheng.bo.center.OrderItemsCommentBO;
 import us.supercheng.enums.OrderStatusEnum;
 import us.supercheng.enums.YesOrNo;
-import us.supercheng.mapper.OrderItemsMapper;
-import us.supercheng.mapper.OrderStatusMapper;
-import us.supercheng.mapper.OrdersMapper;
-import us.supercheng.mapper.OrdersMapperCustom;
+import us.supercheng.mapper.*;
+import us.supercheng.pojo.ItemsComments;
 import us.supercheng.pojo.OrderItems;
 import us.supercheng.pojo.OrderStatus;
 import us.supercheng.pojo.Orders;
@@ -27,6 +28,9 @@ import java.util.Map;
 public class CenterOrderServiceImpl implements CenterOrderService {
 
     @Autowired
+    private Sid sid;
+
+    @Autowired
     private OrdersMapperCustom ordersMapperCustom;
 
     @Autowired
@@ -37,6 +41,9 @@ public class CenterOrderServiceImpl implements CenterOrderService {
 
     @Autowired
     private OrderItemsMapper orderItemsMapper;
+
+    @Autowired
+    private ItemsCommentsMapperCustom itemsCommentsMapperCustom;
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
@@ -83,6 +90,7 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         return this.ordersMapper.updateByPrimaryKeySelective(order) > 0;
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public Orders getOrdersByUserIdAndOrderId(String orderId, String userId) {
         Orders order = new Orders();
@@ -92,6 +100,7 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         return this.ordersMapper.selectOne(order);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public List<OrderItems> getOrderItemsByOrderId(String orderId) {
         OrderItems orderItems = new OrderItems();
@@ -99,9 +108,42 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         return this.orderItemsMapper.select(orderItems);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public List<OrderItems> getReadyToCommentOrderItems(String userId, Integer pageNum, Integer pageSize) {
 
         return null;
+    }
+
+    @Transactional
+    @Override
+    public void insertItemsComments(String userId, List<OrderItemsCommentBO> orderItemsCommentBOs) {
+        for (OrderItemsCommentBO o : orderItemsCommentBOs)
+            o.setCommentId(sid.nextShort());
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", userId);
+        map.put("comments", orderItemsCommentBOs);
+
+        this.itemsCommentsMapperCustom.saveUserCommentList(map);
+    }
+
+    @Transactional
+    @Override
+    public void markOrderCommented(String orderId) {
+        Orders order = new Orders();
+        order.setId(orderId);
+        order.setUpdatedTime(new Date());
+        order.setIsComment(YesOrNo.Yes.type);
+        this.ordersMapper.updateByPrimaryKeySelective(order);
+    }
+
+    @Transactional
+    @Override
+    public void updateOrderStatusCommentTime(String orderId) {
+        OrderStatus os = new OrderStatus();
+        os.setOrderId(orderId);
+        os.setCommentTime(new Date());
+        this.orderStatusMapper.updateByPrimaryKeySelective(os);
     }
 }
