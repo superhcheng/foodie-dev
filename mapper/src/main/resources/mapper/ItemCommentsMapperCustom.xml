@@ -30,4 +30,22 @@
             )
         </foreach>
     </select>
+
+    <select id="queryUserComments" parameterType="Map" resultType="us.supercheng.vo.MyCommentVO">
+        SELECT
+            ic.id AS commentId,
+            ic.created_time AS createdTime,
+            ic.item_id AS itemId,
+            img.url AS itemImg,
+            ic.item_name AS itemName,
+            ic.content AS content,
+            ic.sepc_name AS specName
+        FROM items_comments AS ic
+        LEFT JOIN items_img AS img ON
+            ic.item_id = img.item_id
+        WHERE
+            img.is_main = 1
+        AND
+            ic.user_id = #{paraMap.userId}
+    </select>
 </mapper>

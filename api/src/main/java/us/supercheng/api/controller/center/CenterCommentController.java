@@ -70,7 +70,6 @@ public class CenterCommentController extends BaseController {
         if (pageSize == null)
             pageSize = DEFAULT_PAGE_SIZE;
 
-
-        return null;
+        return APIResponse.ok(this.centerOrderService.queryUserComments(userId, page, pageSize));
     }
 }

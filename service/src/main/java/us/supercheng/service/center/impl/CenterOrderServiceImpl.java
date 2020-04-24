@@ -1,5 +1,6 @@
 package us.supercheng.service.center.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.aspectj.weaver.ast.Or;
 import org.n3r.idworker.Sid;
@@ -18,6 +19,7 @@ import us.supercheng.pojo.OrderStatus;
 import us.supercheng.pojo.Orders;
 import us.supercheng.service.center.CenterOrderService;
 import us.supercheng.utils.PagedResult;
+import us.supercheng.vo.MyCommentVO;
 import us.supercheng.vo.MyOrdersVO;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,6 +57,7 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         if (orderStatus != null)
             map.put("orderStatus", orderStatus);
 
+        PageHelper.startPage(pageNum, pageSize);
         List<MyOrdersVO> myOrdersVOs = this.ordersMapperCustom.query(map);
         PageInfo<?> pageInfo = new PageInfo<>(myOrdersVOs);
 
@@ -145,5 +148,17 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         os.setOrderId(orderId);
         os.setCommentTime(new Date());
         this.orderStatusMapper.updateByPrimaryKeySelective(os);
+    }
+
+    @Override
+    public PagedResult queryUserComments(String userId, Integer pageNum, Integer pageSize) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", userId);
+
+        PageHelper.startPage(pageNum, pageSize);
+        List<MyCommentVO> list = this.itemsCommentsMapperCustom.queryUserComments(map);
+        PageInfo<?> pageInfo = new PageInfo<>(list);
+
+        return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(), list);
     }
 }
