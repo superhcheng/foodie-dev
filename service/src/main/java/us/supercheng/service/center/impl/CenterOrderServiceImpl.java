@@ -2,7 +2,6 @@ package us.supercheng.service.center.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.aspectj.weaver.ast.Or;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import us.supercheng.bo.center.OrderItemsCommentBO;
 import us.supercheng.enums.OrderStatusEnum;
 import us.supercheng.enums.YesOrNo;
 import us.supercheng.mapper.*;
-import us.supercheng.pojo.ItemsComments;
 import us.supercheng.pojo.OrderItems;
 import us.supercheng.pojo.OrderStatus;
 import us.supercheng.pojo.Orders;
@@ -21,6 +19,7 @@ import us.supercheng.service.center.CenterOrderService;
 import us.supercheng.utils.PagedResult;
 import us.supercheng.vo.MyCommentVO;
 import us.supercheng.vo.MyOrdersVO;
+import us.supercheng.vo.OrderStatusCountsVO;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -160,5 +159,28 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         PageInfo<?> pageInfo = new PageInfo<>(list);
 
         return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(), list);
+    }
+
+    @Override
+    public OrderStatusCountsVO getOrderStatusCountSummary(String userId) {
+        OrderStatusCountsVO ret = new OrderStatusCountsVO();
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("userId", userId);
+        map.put("orderStatus", OrderStatusEnum.WAIT_PAY.type);
+        ret.setWaitPayCounts(this.ordersMapperCustom.getOrderStatusCount(map));
+
+        map.put("orderStatus", OrderStatusEnum.WAIT_DELIVER.type);
+        ret.setWaitDeliverCounts(this.ordersMapperCustom.getOrderStatusCount(map));
+
+        map.put("orderStatus", OrderStatusEnum.WAIT_RECEIVE.type);
+        ret.setWaitReceiveCounts(this.ordersMapperCustom.getOrderStatusCount(map));
+
+
+        map.put("orderStatus", OrderStatusEnum.WAIT_RECEIVE.type);
+        map.put("isCommented", YesOrNo.No.type);
+        ret.setWaitCommentCounts(this.ordersMapperCustom.getOrderStatusCount(map));
+
+        return ret;
     }
 }

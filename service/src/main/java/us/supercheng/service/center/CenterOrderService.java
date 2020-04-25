@@ -5,6 +5,7 @@ import us.supercheng.pojo.OrderItems;
 import us.supercheng.pojo.Orders;
 import us.supercheng.utils.PagedResult;
 import us.supercheng.vo.MyCommentVO;
+import us.supercheng.vo.OrderStatusCountsVO;
 
 import java.util.List;
 
@@ -19,4 +20,5 @@ public interface CenterOrderService {
     void markOrderCommented(String orderId);
     void updateOrderStatusCommentTime(String orderId);
     PagedResult queryUserComments(String userId, Integer pageNum, Integer pageSize);
+    OrderStatusCountsVO getOrderStatusCountSummary(String userId);
 }

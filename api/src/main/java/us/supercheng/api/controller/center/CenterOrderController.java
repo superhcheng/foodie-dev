@@ -77,4 +77,12 @@ public class CenterOrderController extends BaseController {
 
         return APIResponse.errorMsg("Failed to delete Order");
     }
+
+    @PostMapping("statusCounts")
+    public APIResponse statusCounts(@RequestParam String userId) {
+        if (StringUtils.isBlank(userId))
+            return APIResponse.errorMsg("Missing required field User ID");
+
+        return APIResponse.ok(this.centerOrderService.getOrderStatusCountSummary(userId));
+    }
 }
