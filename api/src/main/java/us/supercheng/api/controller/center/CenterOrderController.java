@@ -85,4 +85,18 @@ public class CenterOrderController extends BaseController {
 
         return APIResponse.ok(this.centerOrderService.getOrderStatusCountSummary(userId));
     }
+
+    @PostMapping("trend")
+    public APIResponse getTrend(@RequestParam String userId, @RequestParam Integer page, @RequestParam Integer pageSize) {
+        if (StringUtils.isBlank(userId))
+            return APIResponse.errorMsg("Missing required field User ID");
+
+        if (page == null || page < 1)
+            page = DEFAULT_PAGE;
+
+        if (pageSize == null || pageSize < 1)
+            pageSize = DEFAULT_PAGE_SIZE;
+
+        return APIResponse.ok(this.centerOrderService.getTrend(userId, page, pageSize));
+    }
 }

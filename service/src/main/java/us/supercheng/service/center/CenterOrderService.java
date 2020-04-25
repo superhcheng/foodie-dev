@@ -15,10 +15,10 @@ public interface CenterOrderService {
     boolean markOrderDelete(String orderId, String userId);
     Orders getOrdersByUserIdAndOrderId(String orderId, String userId);
     List<OrderItems> getOrderItemsByOrderId(String orderId);
-    List<OrderItems> getReadyToCommentOrderItems(String userId, Integer pageNum, Integer pageSize);
     void insertItemsComments(String userId, List<OrderItemsCommentBO> orderItemsCommentBOs);
     void markOrderCommented(String orderId);
     void updateOrderStatusCommentTime(String orderId);
     PagedResult queryUserComments(String userId, Integer pageNum, Integer pageSize);
     OrderStatusCountsVO getOrderStatusCountSummary(String userId);
+    PagedResult getTrend(String userId, Integer pageNum, Integer pageSize);
 }

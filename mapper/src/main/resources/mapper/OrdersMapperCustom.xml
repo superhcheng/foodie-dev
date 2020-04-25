@@ -72,4 +72,28 @@
             o.is_comment = 0
         </if>
     </select>
+
+
+    <select id="getTrend" resultType="us.supercheng.pojo.OrderStatus" parameterType="Map">
+        SELECT
+            os.order_id AS orderId,
+            os.order_status AS orderStatus,
+            os.created_time AS createdTime,
+            os.pay_time AS payTime,
+            os.deliver_time AS deliverTime,
+            os.success_time AS successTime,
+            os.close_time AS closeTime,
+            os.comment_time AS commentTime
+        FROM
+            order_status AS os
+        LEFT JOIN orders AS o ON os.order_id = o.id
+        WHERE
+            o.is_delete = 0
+        AND
+            o.user_id = #{paraMap.userId}
+        AND
+            os.order_status IN (20, 30, 40)
+        ORDER BY
+            o.id DESC
+    </select>
 </mapper>

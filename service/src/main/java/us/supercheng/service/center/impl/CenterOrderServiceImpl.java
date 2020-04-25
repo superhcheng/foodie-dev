@@ -110,13 +110,6 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         return this.orderItemsMapper.select(orderItems);
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
-    @Override
-    public List<OrderItems> getReadyToCommentOrderItems(String userId, Integer pageNum, Integer pageSize) {
-
-        return null;
-    }
-
     @Transactional
     @Override
     public void insertItemsComments(String userId, List<OrderItemsCommentBO> orderItemsCommentBOs) {
@@ -149,6 +142,7 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         this.orderStatusMapper.updateByPrimaryKeySelective(os);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public PagedResult queryUserComments(String userId, Integer pageNum, Integer pageSize) {
         Map<String, Object> map = new HashMap<>();
@@ -161,6 +155,7 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(), list);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public OrderStatusCountsVO getOrderStatusCountSummary(String userId) {
         OrderStatusCountsVO ret = new OrderStatusCountsVO();
@@ -182,5 +177,18 @@ public class CenterOrderServiceImpl implements CenterOrderService {
         ret.setWaitCommentCounts(this.ordersMapperCustom.getOrderStatusCount(map));
 
         return ret;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public PagedResult getTrend(String userId, Integer pageNum, Integer pageSize) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", userId);
+
+        PageHelper.startPage(pageNum, pageSize);
+        List<OrderStatus> list = this.ordersMapperCustom.getTrend(map);
+        PageInfo<?> pageInfo = new PageInfo<>(list);
+
+        return new PagedResult(pageNum, pageInfo.getPages(), pageInfo.getTotal(), list);
     }
 }
