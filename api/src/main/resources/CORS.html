@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+  <meta charset="utf-8">
+  <title>Ajax responses from JS Bin</title>
+</head>
+<body>
+    <script>
+        /*jshint jquery:true*/
+        console.clear();
+
+        $.ajax({
+        //* 1. get the JSON representation of the bin
+        url: 'http://192.168.31.46:90/static/image/php.png', // http://192.168.31.46:91/static-files/image/php.png http://192.168.31.46:90/static/image/php.png
+        dataType: 'html',
+        //*/
+        
+        /* 2. get the full HTML output of the bin
+        url: 'http://jsbin.com/xuyis/1.html',
+        dataType: 'html',
+        
+        // 2.1. including this header gets the HTML *without* the "edit in jsbin"
+        headers: { 'x-requested-with': 'XMLHttpRequest' },
+        //*/
+        
+        /* 3. get the JavaScript panel as JSON
+        url: '//jsbin.com/xuyis/1.json',
+        dataType: 'json',
+        //*/
+        
+        success: function (result) {
+            console.log(result);
+        },
+        error: function (xhr, status, error) {
+            console.error(error);
+        }
+        });
+    </script>
+
+</body>
+</html>
