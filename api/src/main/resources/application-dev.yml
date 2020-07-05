@@ -16,7 +16,10 @@ spring:
     url: jdbc:mysql://192.168.31.46:3306/foodie_dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true
     username: root
     password: abc123456
-
+  redis:
+    database: 0
+    host: 192.168.31.213
+    password: moka_cheng
 
 mybatis:
   configuration:

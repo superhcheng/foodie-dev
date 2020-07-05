@@ -23,7 +23,7 @@ public class Swagger2 {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
-                //.apiInfo(this.apiInfo())
+                .apiInfo(this.apiInfo())
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("us.supercheng.api.controller"))
                 .paths(PathSelectors.any())
