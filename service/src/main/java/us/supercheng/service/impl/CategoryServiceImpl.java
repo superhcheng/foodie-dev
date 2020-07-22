@@ -56,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryVO> getSubCatListByParentId(Integer parentId) {
         List<CategoryVO> ret = null;
-        String key = "index_sub_cat_" + parentId,
+        String key = "index_sub_cat:" + parentId,
                res = this.redisOperator.get(key);
 
         if (StringUtils.isBlank(res)) {

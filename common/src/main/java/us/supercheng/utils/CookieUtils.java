@@ -15,6 +15,8 @@ public final class CookieUtils {
 
     final static Logger logger = LoggerFactory.getLogger(CookieUtils.class);
     public final static String USER_COOKIE_KEY = "user";
+    public final static String SHOPCART_COOKIE_KEY = "shopcart";
+
 
     /**
 	 * 
