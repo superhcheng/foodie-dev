@@ -3,9 +3,15 @@ package us.supercheng.service.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import us.supercheng.bo.ShopcartItemBO;
 import us.supercheng.bo.SubmitOrderBO;
 import us.supercheng.enums.OrderStatusEnum;
 import us.supercheng.enums.YesOrNo;
@@ -16,9 +22,12 @@ import us.supercheng.pojo.*;
 import us.supercheng.service.AddressService;
 import us.supercheng.service.ItemsService;
 import us.supercheng.service.OrderService;
-import us.supercheng.utils.DateUtil;
+import us.supercheng.utils.*;
 import us.supercheng.vo.MerchantOrdersVO;
 import us.supercheng.vo.OrderVO;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 @Service
@@ -45,43 +54,55 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ItemsService itemsService;
 
+    @Autowired
+    private RedisOperator redisOperator;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Transactional
     @Override
-    public OrderVO createOrder(SubmitOrderBO submitOrderBO) {
+    public OrderVO createOrder(SubmitOrderBO submitOrderBO, String url, HttpServletRequest req, HttpServletResponse resp) {
+        int totalAmt = 0,
+            actualAmt = 0,
+            postAmt = 0;
+
         Orders order = new Orders();
         List<String> list = new ArrayList<>();
         String[] specIds = submitOrderBO.getItemSpecIds().split(",");
         Date now = new Date();
         String orderId = this.sid.nextShort(),
-               userId = "";
-        int totalAmt = 0, actualAmt = 0, postAmt = 0;
+               userId = submitOrderBO.getUserId(),
+               redisKey = "shopping_cart:" + userId,
+               jsonStr = this.redisOperator.get(redisKey);
+
+        if (StringUtils.isBlank(jsonStr)) {
+            CookieUtils.deleteCookie(req, resp, CookieUtils.SHOPCART_COOKIE_KEY);
+            throw new RuntimeException("Cannot create order due to redis shopping cart is missing");
+        }
+
+        List<ShopcartItemBO> itemBOS = JsonUtils.jsonToList(jsonStr, ShopcartItemBO.class);
 
         order.setId(orderId);
         order.setPayMethod(submitOrderBO.getPayMethod());
-        userId = submitOrderBO.getUserId();
         order.setUserId(userId);
 
-        if (!StringUtils.isBlank(submitOrderBO.getLeftMsg())) {
+        if (!StringUtils.isBlank(submitOrderBO.getLeftMsg()))
             order.setLeftMsg(submitOrderBO.getLeftMsg());
-        }
 
         UserAddress address = this.addressService.getUserAddressByUserIdAndAddressId(userId, submitOrderBO.getAddressId());
 
-        if (!StringUtils.isBlank(address.getProvince())) {
+        if (!StringUtils.isBlank(address.getProvince()))
             list.add(address.getProvince());
-        }
 
-        if (!StringUtils.isBlank(address.getCity())) {
+        if (!StringUtils.isBlank(address.getCity()))
             list.add(address.getCity());
-        }
 
-        if (!StringUtils.isBlank(address.getDistrict())) {
+        if (!StringUtils.isBlank(address.getDistrict()))
             list.add(address.getDistrict());
-        }
 
-        if (!StringUtils.isBlank(address.getDetail())) {
+        if (!StringUtils.isBlank(address.getDetail()))
             list.add(address.getDetail());
-        }
 
         StringBuilder sb = new StringBuilder();
         for (int i=0, len=list.size(); i<len; i++)
@@ -93,17 +114,14 @@ public class OrderServiceImpl implements OrderService {
         if (sb.length() > 0)
             order.setReceiverAddress(sb.toString());
 
-        if (!StringUtils.isBlank(address.getReceiver())) {
+        if (!StringUtils.isBlank(address.getReceiver()))
             order.setReceiverName(address.getReceiver());
-        }
 
-        if (!StringUtils.isBlank(address.getMobile())) {
+        if (!StringUtils.isBlank(address.getMobile()))
             order.setReceiverMobile(address.getMobile());
-        }
-
 
         OrderStatus orderStatus = new OrderStatus();
-
+        List<ShopcartItemBO> delList = new ArrayList<>();
 
         for (String specId : specIds) {
             OrderItems orderItems = new OrderItems();
@@ -116,8 +134,7 @@ public class OrderServiceImpl implements OrderService {
                 if (items != null) {
                     totalAmt += itemsSpec.getPriceNormal();
                     actualAmt += itemsSpec.getPriceDiscount();
-
-                    orderItems.setBuyCounts(1);
+                    orderItems.setBuyCounts(this.getShoppingCartItemCount(specId, itemBOS, delList));
                     orderItems.setId(this.sid.nextShort());
                     orderItems.setItemId(itemsSpec.getItemId());
                     ItemsImg img = this.itemsService.getItemsImgMainByItemId(items.getId());
@@ -167,6 +184,24 @@ public class OrderServiceImpl implements OrderService {
         OrderVO ret = new OrderVO();
         ret.setOrders(order);
         ret.setMerchantOrdersVO(merchantOrdersVO);
+        itemBOS.removeAll(delList);
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("imoocUserId", "imooc");
+        headers.add("password", "imooc");
+
+        HttpEntity<MerchantOrdersVO> entity = new HttpEntity<>(ret.getMerchantOrdersVO(), headers);
+        ResponseEntity<APIResponse> respEntity = restTemplate.postForEntity(url, entity, APIResponse.class);
+
+        APIResponse apiResp = respEntity.getBody();
+        if (apiResp == null || apiResp.getStatus() != 200)
+            throw new RuntimeException("Interval Payment error...... from " + url);
+
+        jsonStr = JsonUtils.objectToJson(itemBOS);
+        this.redisOperator.set(redisKey, jsonStr);
+        CookieUtils.setCookie(req, resp, CookieUtils.SHOPCART_COOKIE_KEY, jsonStr, true);
 
         return ret;
     }
@@ -201,5 +236,15 @@ public class OrderServiceImpl implements OrderService {
                 this.orderStatusMapper.updateByPrimaryKeySelective(os);
             }
         }
+    }
+
+    private int getShoppingCartItemCount(String itemSpecId, List<ShopcartItemBO> list, List<ShopcartItemBO> delList) {
+        for (ShopcartItemBO each : list)
+            if (each.getSpecId().equalsIgnoreCase(itemSpecId)) {
+                delList.add(each);
+                return each.getBuyCounts();
+            }
+
+        return 0;
     }
 }

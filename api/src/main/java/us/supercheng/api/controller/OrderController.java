@@ -4,16 +4,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import us.supercheng.bo.SubmitOrderBO;
 import us.supercheng.enums.OrderStatusEnum;
 import us.supercheng.enums.PaymentType;
 import us.supercheng.pojo.OrderStatus;
-import us.supercheng.service.ItemsService;
 import us.supercheng.service.OrderService;
 import us.supercheng.utils.APIResponse;
-import us.supercheng.vo.MerchantOrdersVO;
 import us.supercheng.vo.OrderVO;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("orders")
@@ -22,14 +22,8 @@ public class OrderController extends BaseController {
     @Autowired
     private OrderService orderService;
 
-    @Autowired
-    private ItemsService itemsService;
-
-    @Autowired
-    private RestTemplate restTemplate;
-
     @PostMapping("create")
-    public APIResponse createOrder(@RequestBody SubmitOrderBO submitOrderBO) {
+    public APIResponse createOrder(@RequestBody SubmitOrderBO submitOrderBO, HttpServletRequest req, HttpServletResponse resp) {
         if (submitOrderBO == null)
             return APIResponse.errorMsg("Missing request body");
 
@@ -49,25 +43,7 @@ public class OrderController extends BaseController {
             if (payType != PaymentType.Alipay.type && payType != PaymentType.WechatPay.type)
                 return APIResponse.errorMsg("Unsupported Payment Type: " + payType);
         // Create Order
-
-        OrderVO orderVO = this.orderService.createOrder(submitOrderBO);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("imoocUserId", "imooc");
-        headers.add("password", "imooc");
-
-        HttpEntity<MerchantOrdersVO> entity = new HttpEntity<>(orderVO.getMerchantOrdersVO(), headers);
-
-        ResponseEntity<APIResponse> respEntity = restTemplate.postForEntity(PAYMENT_CENTER, entity, APIResponse.class);
-
-        APIResponse resp = respEntity.getBody();
-        if (resp == null || resp.getStatus() != 200) {
-            return APIResponse.errorMsg("Interval Payment error......");
-        }
-
-        // Update Shopping Card
-
+        OrderVO orderVO = this.orderService.createOrder(submitOrderBO, PAYMENT_CENTER, req, resp);
         return APIResponse.ok(orderVO.getOrders().getId());
     }
 
