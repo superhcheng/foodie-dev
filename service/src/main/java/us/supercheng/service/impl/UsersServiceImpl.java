@@ -1,19 +1,23 @@
 package us.supercheng.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
+import us.supercheng.bo.ShopcartItemBO;
 import us.supercheng.bo.UserBO;
 import us.supercheng.enums.Sex;
 import us.supercheng.mapper.UsersMapper;
 import us.supercheng.pojo.Users;
 import us.supercheng.service.UsersService;
-import us.supercheng.utils.DateUtil;
-import us.supercheng.utils.MD5Utils;
-import java.util.Date;
+import us.supercheng.utils.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 @Service
 public class UsersServiceImpl implements UsersService {
@@ -23,6 +27,9 @@ public class UsersServiceImpl implements UsersService {
 
     @Autowired
     private Sid sid;
+
+    @Autowired
+    private RedisOperator redisOperator;
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
@@ -71,5 +78,58 @@ public class UsersServiceImpl implements UsersService {
         }
 
         return this.usersMapper.selectOneByExample(userExp);
+    }
+
+    @Transactional
+    @Override
+    public void syncShoppingCart(Users user, HttpServletRequest req, HttpServletResponse resp) {
+        String key = "shopping_cart:" + user.getId(),
+                redisStr = this.redisOperator.get(key),
+                cookieStr = CookieUtils.getCookieValue(req, CookieUtils.SHOPCART_COOKIE_KEY, true),
+                jsonStr = null;
+
+        if (StringUtils.isBlank(redisStr)) {
+            if (!StringUtils.isBlank(cookieStr)) {
+                this.redisOperator.set(key, cookieStr);
+            }
+        } else {
+            if (StringUtils.isBlank(cookieStr)) {
+                CookieUtils.setCookie(req, resp, CookieUtils.SHOPCART_COOKIE_KEY, redisStr, true);
+            } else {
+                List<ShopcartItemBO> redisList= JsonUtils.jsonToList(redisStr, ShopcartItemBO.class),
+                                     cookieList = JsonUtils.jsonToList(cookieStr, ShopcartItemBO.class),
+                                     list = new ArrayList<>();
+
+                Map<String, ShopcartItemBO> map = new HashMap<>();
+
+                for (ShopcartItemBO each : redisList) {
+                    String specId = each.getSpecId();
+                    if (map.containsKey(specId)) {
+                        ShopcartItemBO curr = map.get(specId);
+                        curr.setBuyCounts(Math.max(curr.getBuyCounts(), each.getBuyCounts()));
+                    } else
+                        map.put(specId, each);
+                }
+
+                for (ShopcartItemBO each : cookieList) {
+                    String specId = each.getSpecId();
+                    if (map.containsKey(specId)) {
+                        ShopcartItemBO curr = map.get(specId);
+                        curr.setBuyCounts(Math.max(curr.getBuyCounts(), each.getBuyCounts()));
+                    } else
+                        map.put(specId, each);
+                }
+
+
+                for (Map.Entry<String, ShopcartItemBO> entry : map.entrySet())
+                    list.add(entry.getValue());
+
+                if (list.size() > 0) {
+                    jsonStr = JsonUtils.objectToJson(list);
+                    this.redisOperator.set(key, jsonStr);
+                    CookieUtils.setCookie(req, resp, CookieUtils.SHOPCART_COOKIE_KEY, jsonStr, true);
+                }
+            }
+        }
     }
 }

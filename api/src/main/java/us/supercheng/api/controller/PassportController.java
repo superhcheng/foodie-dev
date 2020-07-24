@@ -54,6 +54,7 @@ public class PassportController {
 
         Users user = this.usersService.createUser(userBO);
         this.setUsersObjCookie(user, req, resp);
+        this.usersService.syncShoppingCart(user, req, resp);
         return APIResponse.ok();
     }
 
@@ -72,6 +73,7 @@ public class PassportController {
         }
 
         this.setUsersObjCookie(user, req, resp);
+        this.usersService.syncShoppingCart(user, req, resp);
         return APIResponse.ok(user);
     }
 
