@@ -84,42 +84,25 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public void syncShoppingCart(Users user, HttpServletRequest req, HttpServletResponse resp) {
         String key = "shopping_cart:" + user.getId(),
-                redisStr = this.redisOperator.get(key),
-                cookieStr = CookieUtils.getCookieValue(req, CookieUtils.SHOPCART_COOKIE_KEY, true),
-                jsonStr = null;
+               redisStr = this.redisOperator.get(key),
+               cookieStr = CookieUtils.getCookieValue(req, CookieUtils.SHOPCART_COOKIE_KEY, true),
+               jsonStr = null;
 
         if (StringUtils.isBlank(redisStr)) {
-            if (!StringUtils.isBlank(cookieStr)) {
+            if (!StringUtils.isBlank(cookieStr))
                 this.redisOperator.set(key, cookieStr);
-            }
         } else {
-            if (StringUtils.isBlank(cookieStr)) {
+            if (StringUtils.isBlank(cookieStr))
                 CookieUtils.setCookie(req, resp, CookieUtils.SHOPCART_COOKIE_KEY, redisStr, true);
-            } else {
+            else {
                 List<ShopcartItemBO> redisList= JsonUtils.jsonToList(redisStr, ShopcartItemBO.class),
                                      cookieList = JsonUtils.jsonToList(cookieStr, ShopcartItemBO.class),
                                      list = new ArrayList<>();
 
                 Map<String, ShopcartItemBO> map = new HashMap<>();
 
-                for (ShopcartItemBO each : redisList) {
-                    String specId = each.getSpecId();
-                    if (map.containsKey(specId)) {
-                        ShopcartItemBO curr = map.get(specId);
-                        curr.setBuyCounts(Math.max(curr.getBuyCounts(), each.getBuyCounts()));
-                    } else
-                        map.put(specId, each);
-                }
-
-                for (ShopcartItemBO each : cookieList) {
-                    String specId = each.getSpecId();
-                    if (map.containsKey(specId)) {
-                        ShopcartItemBO curr = map.get(specId);
-                        curr.setBuyCounts(Math.max(curr.getBuyCounts(), each.getBuyCounts()));
-                    } else
-                        map.put(specId, each);
-                }
-
+                this.initShoppingCartMap(map, redisList);
+                this.initShoppingCartMap(map, cookieList);
 
                 for (Map.Entry<String, ShopcartItemBO> entry : map.entrySet())
                     list.add(entry.getValue());
@@ -130,6 +113,17 @@ public class UsersServiceImpl implements UsersService {
                     CookieUtils.setCookie(req, resp, CookieUtils.SHOPCART_COOKIE_KEY, jsonStr, true);
                 }
             }
+        }
+    }
+
+    private void initShoppingCartMap(Map<String, ShopcartItemBO> map, List<ShopcartItemBO> list) {
+        for (ShopcartItemBO each : list) {
+            String specId = each.getSpecId();
+            if (map.containsKey(specId)) {
+                ShopcartItemBO curr = map.get(specId);
+                curr.setBuyCounts(Math.max(curr.getBuyCounts(), each.getBuyCounts()));
+            } else
+                map.put(specId, each);
         }
     }
 }
