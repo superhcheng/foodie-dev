@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import us.supercheng.utils.APIResponse;
 import us.supercheng.utils.RedisOperator;
 
+import java.util.Arrays;
+
 @RestController
 @RequestMapping("redis_test")
 public class RedisTestController {
@@ -39,4 +41,15 @@ public class RedisTestController {
             return APIResponse.errorMsg("Could not delete key: " + key);
         return APIResponse.ok();
     }
+
+    @GetMapping("mGet")
+    public APIResponse mGet(String... keys) {
+        return APIResponse.ok(this.redisOperator.mget(Arrays.asList(keys)));
+    }
+
+    @GetMapping("pipeMGet")
+    public APIResponse pipeMGet(String... keys) {
+        return APIResponse.ok(this.redisOperator.batchGet(Arrays.asList(keys)));
+    }
+
 }

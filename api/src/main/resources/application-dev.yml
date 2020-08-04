@@ -20,7 +20,7 @@ spring:
     password: moka_cheng
     # Standalone
     database: 0
-    host: 192.168.31.213
+    host: 192.168.31.46
 
     # Cluster
     # cluster:
