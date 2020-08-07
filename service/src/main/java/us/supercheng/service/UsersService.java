@@ -10,5 +10,8 @@ public interface UsersService {
     boolean isUsernameExist(String username);
     Users createUser(UserBO user);
     Users login(UserBO user);
+    String createUserSession(Users users);
+    boolean hasUserSession(String userId, String userToken);
+    void delUserSession(String userId);
     void syncShoppingCart(Users user, HttpServletRequest req, HttpServletResponse resp);
 }

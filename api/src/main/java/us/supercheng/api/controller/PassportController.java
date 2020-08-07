@@ -87,9 +87,11 @@ public class PassportController {
     }
 
     @PostMapping("logout")
-    public APIResponse logout(HttpServletRequest req, HttpServletResponse resp) {
+    public APIResponse logout(HttpServletRequest req, HttpServletResponse resp, String userId) {
         CookieUtils.deleteCookie(req, resp, CookieUtils.USER_COOKIE_KEY);
         CookieUtils.deleteCookie(req, resp, CookieUtils.SHOPCART_COOKIE_KEY);
+        if (StringUtils.isNotBlank(userId))
+            this.usersService.delUserSession(userId);
         return APIResponse.ok();
     }
 }

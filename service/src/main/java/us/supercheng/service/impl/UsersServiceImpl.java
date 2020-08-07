@@ -45,10 +45,11 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public Users createUser(UserBO user) {
         Users ret = new Users();
+        String userName = user.getUsername();
 
         ret.setId(this.sid.nextShort());
-        ret.setUsername(user.getUsername());
-        ret.setNickname(user.getUsername());
+        ret.setUsername(userName);
+        ret.setNickname(userName);
         ret.setSex(Sex.Secret.type);
         ret.setFace("PLACEHOLDER");
         try {
@@ -58,8 +59,8 @@ public class UsersServiceImpl implements UsersService {
         Date now = new Date();
         ret.setCreatedTime(now);
         ret.setUpdatedTime(now);
-
         this.usersMapper.insert(ret);
+        this.createUserSession(ret);
 
         return ret;
     }
@@ -77,7 +78,46 @@ public class UsersServiceImpl implements UsersService {
             throw new RuntimeException("MD5 String Conversion Exception");
         }
 
-        return this.usersMapper.selectOneByExample(userExp);
+        Users ret = this.usersMapper.selectOneByExample(userExp);
+
+        if (ret != null)
+            this.createUserSession(ret);
+
+        return ret;
+    }
+
+    @Transactional
+    @Override
+    public String createUserSession(Users users) {
+        if (users == null)
+            return null;
+
+        String userId = users.getId(),
+               userToken;
+
+        if (userId == null)
+            return null;
+
+        userToken = this.sid.nextShort();
+        this.redisOperator.set("user_session:" + userId, userToken);
+        return userToken;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public boolean hasUserSession(String userId, String userToken) {
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(userToken))
+            return false;
+
+        String redisToken = this.redisOperator.get("user_session:" + userId);
+        return redisToken != null && redisToken.equalsIgnoreCase(userToken);
+    }
+
+    @Transactional
+    @Override
+    public void delUserSession(String userId) {
+        if (StringUtils.isNotBlank(userId))
+            this.redisOperator.del("user_session:" + userId);
     }
 
     @Transactional
