@@ -2,6 +2,7 @@ package us.supercheng.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.n3r.idworker.Sid;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -14,6 +15,7 @@ import us.supercheng.mapper.UsersMapper;
 import us.supercheng.pojo.Users;
 import us.supercheng.service.UsersService;
 import us.supercheng.utils.*;
+import us.supercheng.vo.UsersVO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,31 +45,29 @@ public class UsersServiceImpl implements UsersService {
 
     @Transactional
     @Override
-    public Users createUser(UserBO user) {
-        Users ret = new Users();
-        String userName = user.getUsername();
+    public UsersVO createUser(UserBO userBo, HttpServletRequest req, HttpServletResponse resp) {
+        Users user = new Users();
+        String userName = userBo.getUsername();
 
-        ret.setId(this.sid.nextShort());
-        ret.setUsername(userName);
-        ret.setNickname(userName);
-        ret.setSex(Sex.Secret.type);
-        ret.setFace("PLACEHOLDER");
+        user.setId(this.sid.nextShort());
+        user.setUsername(userName);
+        user.setNickname(userName);
+        user.setSex(Sex.Secret.type);
+        user.setFace("PLACEHOLDER");
         try {
-            ret.setPassword(MD5Utils.getMD5Str(user.getPassword()));
+            user.setPassword(MD5Utils.getMD5Str(userBo.getPassword()));
         } catch (Exception ex) {}
-        ret.setBirthday(DateUtil.stringToDate("1900-1-1"));
+        user.setBirthday(DateUtil.stringToDate("1900-1-1"));
         Date now = new Date();
-        ret.setCreatedTime(now);
-        ret.setUpdatedTime(now);
-        this.usersMapper.insert(ret);
-        this.createUserSession(ret);
-
-        return ret;
+        user.setCreatedTime(now);
+        user.setUpdatedTime(now);
+        this.usersMapper.insert(user);
+        return this.setUsersObjCookie(user, this.createUserSession(user), req, resp);
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
-    public Users login(UserBO user) {
+    public UsersVO login(UserBO user, HttpServletRequest req, HttpServletResponse resp) {
         Example userExp = new Example(Users.class);
         Example.Criteria criteria = userExp.createCriteria();
 
@@ -78,12 +78,12 @@ public class UsersServiceImpl implements UsersService {
             throw new RuntimeException("MD5 String Conversion Exception");
         }
 
-        Users ret = this.usersMapper.selectOneByExample(userExp);
+        Users users = this.usersMapper.selectOneByExample(userExp);
 
-        if (ret != null)
-            this.createUserSession(ret);
+        if (users != null)
+            return this.setUsersObjCookie(users, this.createUserSession(users), req, resp);
 
-        return ret;
+        return null;
     }
 
     @Transactional
@@ -98,7 +98,7 @@ public class UsersServiceImpl implements UsersService {
         if (userId == null)
             return null;
 
-        userToken = this.sid.nextShort();
+        userToken = UUID.randomUUID().toString().trim();
         this.redisOperator.set("user_session:" + userId, userToken);
         return userToken;
     }
@@ -122,8 +122,8 @@ public class UsersServiceImpl implements UsersService {
 
     @Transactional
     @Override
-    public void syncShoppingCart(Users user, HttpServletRequest req, HttpServletResponse resp) {
-        String key = "shopping_cart:" + user.getId(),
+    public void syncShoppingCart(String userId, HttpServletRequest req, HttpServletResponse resp) {
+        String key = "shopping_cart:" + userId,
                redisStr = this.redisOperator.get(key),
                cookieStr = CookieUtils.getCookieValue(req, CookieUtils.SHOPCART_COOKIE_KEY, true),
                jsonStr = null;
@@ -165,5 +165,20 @@ public class UsersServiceImpl implements UsersService {
             } else
                 map.put(specId, each);
         }
+    }
+
+    private UsersVO setUsersObjCookie(Users user, String uniqueToken, HttpServletRequest req, HttpServletResponse resp) {
+        user.setCreatedTime(null);
+        user.setUpdatedTime(null);
+        user.setPassword(null);
+        user.setBirthday(null);
+        user.setRealname(null);
+
+        UsersVO usersVO = new UsersVO();
+        BeanUtils.copyProperties(user, usersVO);
+        usersVO.setUserUniqueToken(uniqueToken);
+
+        CookieUtils.setCookie(req, resp, CookieUtils.USER_COOKIE_KEY, JsonUtils.objectToJson(usersVO), true);
+        return usersVO;
     }
 }

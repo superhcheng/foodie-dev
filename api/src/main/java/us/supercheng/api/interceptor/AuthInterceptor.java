@@ -10,8 +10,6 @@ import us.supercheng.utils.JsonUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 @Component
@@ -28,14 +26,13 @@ public class AuthInterceptor implements HandlerInterceptor {
         String userId = request.getHeader(USER_ID_KEY),
                userToken = request.getHeader(USER_TOKEN_KEY);
 
-        if (this.usersService.hasUserSession(userId, userToken)) {
+        if (this.usersService.hasUserSession(userId, userToken))
             return true;
-        }
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         PrintWriter writer = response.getWriter();
-        writer.write(JsonUtils.objectToJson(APIResponse.errorMsg("Please login")));
+        writer.write(JsonUtils.objectToJson(APIResponse.errorMsg("Please login" + userId + " === " + userToken)));
         writer.flush();
         writer.close();
         return false;
