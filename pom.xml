@@ -13,6 +13,7 @@
         <module>service</module>
         <module>api</module>
         <module>mapper</module>
+        <module>sso</module>
     </modules>
 
     <packaging>pom</packaging>
