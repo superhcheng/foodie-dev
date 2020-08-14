@@ -11,16 +11,30 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SSOAuthController {
 
     @RequestMapping("login")
-    public String login() {
+    public String login(@RequestParam("retUrl") String retUrl,
+                        Model model) {
+        model.addAttribute("retUrl", retUrl);
         return "login";
     }
 
     @PostMapping("/doLogin")
     public String doLogin(@RequestParam("username") String username,
                           @RequestParam("password") String password,
+                          @RequestParam("retUrl") String retUrl,
                           Model model) {
         model.addAttribute("username" , username);
         model.addAttribute("password" , password);
+
+
+        boolean loginSuccess = false | true;
+        // Login Success
+
+        if (loginSuccess) {
+            return "redirect:http://" + retUrl;
+        }
+
+
+        // Login Failed
         return "login";
     }
 }

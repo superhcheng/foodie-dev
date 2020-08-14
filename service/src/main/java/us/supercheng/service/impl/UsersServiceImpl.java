@@ -68,22 +68,31 @@ public class UsersServiceImpl implements UsersService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public UsersVO login(UserBO user, HttpServletRequest req, HttpServletResponse resp) {
-        Example userExp = new Example(Users.class);
-        Example.Criteria criteria = userExp.createCriteria();
+        if (user == null)
+            return null;
 
-        criteria.andEqualTo("username", user.getUsername());
-        try {
-            criteria.andEqualTo("password", MD5Utils.getMD5Str(user.getPassword()));
-        } catch (Exception ex) {
-            throw new RuntimeException("MD5 String Conversion Exception");
-        }
-
-        Users users = this.usersMapper.selectOneByExample(userExp);
-
+        Users users = this.validateLogin(user.getUsername(), user.getPassword());
         if (users != null)
             return this.setUsersObjCookie(users, this.createUserSession(users), req, resp);
 
         return null;
+    }
+
+    @Override
+    public Users validateLogin(String username, String password) {
+        if (StringUtils.isBlank(username) || StringUtils.isBlank(password))
+            return null;
+
+        Example userExp = new Example(Users.class);
+        Example.Criteria criteria = userExp.createCriteria();
+        try {
+            criteria.andEqualTo("username", username);
+            criteria.andEqualTo("password", MD5Utils.getMD5Str(password));
+        } catch (Exception ex) {
+            throw new RuntimeException("MD5 String Conversion Exception");
+        }
+
+        return this.usersMapper.selectOneByExample(userExp);
     }
 
     @Transactional
@@ -156,6 +165,26 @@ public class UsersServiceImpl implements UsersService {
         }
     }
 
+    @Override
+    public void removeUsersPII(Users users) {
+        users.setCreatedTime(null);
+        users.setUpdatedTime(null);
+        users.setPassword(null);
+        users.setBirthday(null);
+        users.setRealname(null);
+    }
+
+    @Override
+    public UsersVO convertUsersToUsersVOWithToken(Users users, String token) {
+        UsersVO usersVO = new UsersVO();
+        BeanUtils.copyProperties(users, usersVO);
+
+        if (StringUtils.isNotBlank(token))
+            usersVO.setUserUniqueToken(token);
+
+        return usersVO;
+    }
+
     private void initShoppingCartMap(Map<String, ShopcartItemBO> map, List<ShopcartItemBO> list) {
         for (ShopcartItemBO each : list) {
             String specId = each.getSpecId();
@@ -168,16 +197,8 @@ public class UsersServiceImpl implements UsersService {
     }
 
     private UsersVO setUsersObjCookie(Users user, String uniqueToken, HttpServletRequest req, HttpServletResponse resp) {
-        user.setCreatedTime(null);
-        user.setUpdatedTime(null);
-        user.setPassword(null);
-        user.setBirthday(null);
-        user.setRealname(null);
-
-        UsersVO usersVO = new UsersVO();
-        BeanUtils.copyProperties(user, usersVO);
-        usersVO.setUserUniqueToken(uniqueToken);
-
+        this.removeUsersPII(user);
+        UsersVO usersVO = this.convertUsersToUsersVOWithToken(user, uniqueToken);
         CookieUtils.setCookie(req, resp, CookieUtils.USER_COOKIE_KEY, JsonUtils.objectToJson(usersVO), true);
         return usersVO;
     }
