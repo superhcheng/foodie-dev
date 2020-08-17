@@ -217,4 +217,15 @@ public class RedisOperator {
 		return redisTemplate.opsForList().rightPush(key, value);
 	}
 
+
+	public boolean flushDB() {
+		return this.redisTemplate.execute(new RedisCallback<Boolean>() {
+			@Override
+			public Boolean doInRedis(RedisConnection redisConnection) throws DataAccessException {
+				redisConnection.flushDb();
+				return true;
+			}
+		});
+	}
+
 }

@@ -1,19 +1,37 @@
 package us.supercheng.sso.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import us.supercheng.sso.entity.AuthInfo;
+import us.supercheng.sso.service.impl.AuthServiceImpl;
+import us.supercheng.utils.APIResponse;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/")
 public class SSOAuthController {
 
+    @Autowired
+    private AuthServiceImpl authService;
+
     @RequestMapping("login")
     public String login(@RequestParam("retUrl") String retUrl,
-                        Model model) {
+                        Model model,
+                        HttpServletRequest req) {
         model.addAttribute("retUrl", retUrl);
+
+        if (this.authService.checkCASSSO(req)) {
+            String tmpTkt = this.authService.createTempTKT();
+            return "redirect:" + retUrl + "?tempTkt=" + tmpTkt;
+        }
+
         return "login";
     }
 
@@ -21,20 +39,26 @@ public class SSOAuthController {
     public String doLogin(@RequestParam("username") String username,
                           @RequestParam("password") String password,
                           @RequestParam("retUrl") String retUrl,
-                          Model model) {
-        model.addAttribute("username" , username);
-        model.addAttribute("password" , password);
+                          Model model,
+                          HttpServletRequest req,
+                          HttpServletResponse resp) {
+        AuthInfo authInfo = this.authService.createCASSession(username, password, retUrl, model, req, resp);
+
+        if (authInfo == null)
+            return "login";
+
+        String redir = "redirect:" + retUrl + "?tempTkt=" + authInfo.getTempTkt() + "&tkt=" + authInfo.getTkt();
+        return redir;
+    }
+
+    @PostMapping("/verifyTempTkt")
+    @ResponseBody
+    public APIResponse verifyTempTkt(String tempTkt,
+                                     String tkt,
+                                     HttpServletRequest req) {
 
 
-        boolean loginSuccess = false | true;
-        // Login Success
 
-        if (loginSuccess) {
-            return "redirect:http://" + retUrl;
-        }
-
-
-        // Login Failed
-        return "login";
+        return this.authService.verifyTempTkt(tempTkt, tkt, req);
     }
 }

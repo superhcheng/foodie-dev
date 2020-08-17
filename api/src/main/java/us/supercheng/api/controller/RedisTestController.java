@@ -52,4 +52,9 @@ public class RedisTestController {
         return APIResponse.ok(this.redisOperator.batchGet(Arrays.asList(keys)));
     }
 
+    @GetMapping("flushDB")
+    public APIResponse flushDB() {
+        return APIResponse.ok(this.redisOperator.flushDB());
+    }
+
 }

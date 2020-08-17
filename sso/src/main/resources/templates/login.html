@@ -24,7 +24,10 @@
             <input type="password" class="form-control" id="password" name="password" placeholder="Password">
         </div>
         <div class="form-group">
-            <input type="hidden" class="form-control" id="retUrl" name="retUrl" placeholder="retUrl" th:value="${retUrl}">
+            <input type="text" class="form-control" id="retUrl" name="retUrl" placeholder="retUrl" th:value="${retUrl}">
+        </div>
+        <div class="form-group">
+            <span th:text="${errMsg}"></span>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
