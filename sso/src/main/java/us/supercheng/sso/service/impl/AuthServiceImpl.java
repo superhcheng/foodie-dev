@@ -67,16 +67,18 @@ public class AuthServiceImpl implements AuthService {
         UsersVO usersVO = this.createCasUserSession(user);
         String redisCASUUID = usersVO.getUserUniqueToken(),
                userId = user.getId();
-        System.out.println("redisCASUUID: " + redisCASUUID);
 
         // Create CAS TKT
         String tkt = this.createTKT(resp, userId);
-        System.out.println("redisCASTKT: " + tkt);
+        usersVO.setUserSessionTkt(tkt);
+        this.redisOperator.set(USER_CAS_SESSION_KEY + user.getId(), JsonUtils.objectToJson(usersVO));
 
         // Create CAS Temp TKT
         String tempTkt = this.createTempTKT();
-        System.out.println("tempTkt: " + tempTkt);
 
+        System.out.println("redisCASUUID: " + redisCASUUID +
+                "TKT: " + tkt +
+                "Temp TKT: " + tempTkt);
         return new AuthInfo(tkt, tempTkt);
     }
 
@@ -97,13 +99,6 @@ public class AuthServiceImpl implements AuthService {
                 return APIResponse.errorMsg("Temp TKT Verification Failed 2");
         } catch (Exception ex) {}
 
-
-        if (req.getCookies() != null) {
-            for (Cookie c : req.getCookies()) {
-                System.out.println(c.getName()  + " === " + c.getName() + " @ " + c.getDomain() + " vs " + c.getPath());
-            }
-        }
-
         String userId = this.redisOperator.get(USER_CAS_TKT_KEY + tkt);
 
         if (StringUtils.isBlank(userId))
@@ -118,6 +113,21 @@ public class AuthServiceImpl implements AuthService {
         return APIResponse.ok(JsonUtils.jsonToPojo(userStr, UsersVO.class));
     }
 
+    @Transactional
+    @Override
+    public void logout(String userId, String tkt, HttpServletRequest req, HttpServletResponse resp) {
+        this.remCookie(resp, USER_COOKIE_TKT);
+
+
+
+
+        if (StringUtils.isNotBlank(tkt))
+            this.redisOperator.del(USER_CAS_TKT_KEY + tkt);
+
+        if (StringUtils.isNotBlank(userId))
+            this.redisOperator.del(USER_CAS_SESSION_KEY + userId);
+    }
+
     /**
      * User ID - UserVO object kay-val pair
      *
@@ -128,7 +138,6 @@ public class AuthServiceImpl implements AuthService {
         String redisCASUUID = UUID.randomUUID().toString().trim();
         this.usersService.removeUsersPII(user);
         UsersVO usersVO = this.usersService.convertUsersToUsersVOWithToken(user, redisCASUUID);
-        this.redisOperator.set(USER_CAS_SESSION_KEY + user.getId(), JsonUtils.objectToJson(usersVO));
         return usersVO;
     }
 
@@ -146,16 +155,6 @@ public class AuthServiceImpl implements AuthService {
             this.redisOperator.set(USER_CAS_TEMP_TKT_KEY + tempTkt, MD5Utils.getMD5Str(tempTkt), 600);
         } catch (Exception ex){}
         return tempTkt;
-    }
-
-    @Override
-    public void createCASTKT() {
-
-    }
-
-    @Override
-    public void createCASTempTKT() {
-
     }
 
     void setCookie(HttpServletResponse resp, String key, String val) {

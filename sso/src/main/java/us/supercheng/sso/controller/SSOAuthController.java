@@ -57,8 +57,17 @@ public class SSOAuthController {
                                      String tkt,
                                      HttpServletRequest req) {
 
-
-
+        System.out.println("verifyTempTkt tempTkt: " + tempTkt + " tkt: " + tkt);
         return this.authService.verifyTempTkt(tempTkt, tkt, req);
+    }
+
+    @PostMapping("/logout")
+    @ResponseBody
+    public APIResponse logout(@RequestParam String userId,
+                              @RequestParam String tkt,
+                              HttpServletRequest req,
+                              HttpServletResponse resp) {
+        this.authService.logout(userId, tkt, req, resp);
+        return APIResponse.ok();
     }
 }

@@ -28,6 +28,7 @@ public class UsersVO {
 
     // 用户会话token
     private String userUniqueToken;
+    private String userSessionTkt;
 
     public String getId() {
         return id;
@@ -75,5 +76,13 @@ public class UsersVO {
 
     public void setUserUniqueToken(String userUniqueToken) {
         this.userUniqueToken = userUniqueToken;
+    }
+
+    public String getUserSessionTkt() {
+        return userSessionTkt;
+    }
+
+    public void setUserSessionTkt(String userSessionTkt) {
+        this.userSessionTkt = userSessionTkt;
     }
 }

@@ -12,6 +12,5 @@ public interface AuthService {
     String createTempTKT();
     AuthInfo createCASSession(String username, String password, String retUrl, Model model, HttpServletRequest req, HttpServletResponse resp);
     APIResponse verifyTempTkt(String tempTkt, String tkt, HttpServletRequest req);
-    void createCASTKT();
-    void createCASTempTKT();
+    void logout(String userId, String tkt, HttpServletRequest req, HttpServletResponse resp);
 }
