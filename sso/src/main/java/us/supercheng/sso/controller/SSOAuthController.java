@@ -47,8 +47,7 @@ public class SSOAuthController {
         if (authInfo == null)
             return "login";
 
-        String redir = "redirect:" + retUrl + "?tempTkt=" + authInfo.getTempTkt() + "&tkt=" + authInfo.getTkt();
-        return redir;
+        return "redirect:" + retUrl + "?tempTkt=" + authInfo.getTempTkt() + "&tkt=" + authInfo.getTkt();
     }
 
     @PostMapping("/verifyTempTkt")
@@ -57,7 +56,7 @@ public class SSOAuthController {
                                      String tkt,
                                      HttpServletRequest req) {
 
-        System.out.println("verifyTempTkt tempTkt: " + tempTkt + " tkt: " + tkt);
+        // System.out.println("verifyTempTkt tempTkt: " + tempTkt + " tkt: " + tkt);
         return this.authService.verifyTempTkt(tempTkt, tkt, req);
     }
 

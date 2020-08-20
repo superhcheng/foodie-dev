@@ -76,9 +76,7 @@ public class AuthServiceImpl implements AuthService {
         // Create CAS Temp TKT
         String tempTkt = this.createTempTKT();
 
-        System.out.println("redisCASUUID: " + redisCASUUID +
-                "TKT: " + tkt +
-                "Temp TKT: " + tempTkt);
+        //System.out.println("redisCASUUID: " + redisCASUUID + "TKT: " + tkt + "Temp TKT: " + tempTkt);
         return new AuthInfo(tkt, tempTkt);
     }
 
@@ -94,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             if (tktVal.equals(MD5Utils.getMD5Str(tempTkt))) {
                 this.redisOperator.del(key);
-                System.out.println("REDIS TEMP TKT Deleted!!!");
+                // System.out.println("REDIS TEMP TKT Deleted!!!");
             } else
                 return APIResponse.errorMsg("Temp TKT Verification Failed 2");
         } catch (Exception ex) {}
@@ -106,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
 
         String userStr = this.redisOperator.get(USER_CAS_SESSION_KEY + userId);
 
-        System.out.println(userStr);
+        // System.out.println(userStr);
         if (StringUtils.isBlank(userStr))
             return APIResponse.errorMsg("Temp TKT Verification Failed 4");
 
@@ -117,9 +115,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String userId, String tkt, HttpServletRequest req, HttpServletResponse resp) {
         this.remCookie(resp, USER_COOKIE_TKT);
-
-
-
 
         if (StringUtils.isNotBlank(tkt))
             this.redisOperator.del(USER_CAS_TKT_KEY + tkt);
@@ -137,8 +132,7 @@ public class AuthServiceImpl implements AuthService {
     private UsersVO createCasUserSession(Users user) {
         String redisCASUUID = UUID.randomUUID().toString().trim();
         this.usersService.removeUsersPII(user);
-        UsersVO usersVO = this.usersService.convertUsersToUsersVOWithToken(user, redisCASUUID);
-        return usersVO;
+        return this.usersService.convertUsersToUsersVOWithToken(user, redisCASUUID);
     }
 
 
@@ -163,8 +157,6 @@ public class AuthServiceImpl implements AuthService {
         cookie.setDomain("sso.com");
         cookie.setMaxAge(-1);
         resp.addCookie(cookie);
-
-        System.out.println("cookie: " + cookie);
     }
 
     void remCookie(HttpServletResponse resp, String key) {
