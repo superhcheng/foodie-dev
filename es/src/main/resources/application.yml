@@ -7,4 +7,4 @@ spring:
   data:
     elasticsearch:
       cluster-name: docker-cluster
-      cluster-nodes: 155.138.217.198:9300
+      cluster-nodes: 55.38.217.98:9300
