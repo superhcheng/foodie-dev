@@ -63,14 +63,14 @@ public class ItemsService implements IItemsService {
                     ret.add(item);
                 }
 
-                return new AggregatedPageImpl<>((List<T>) ret);
+                return new AggregatedPageImpl<>((List<T>) ret, pageable, searchResponse.getHits().getTotalHits());
             }
         });
 
         PagedResult ret = new PagedResult();
-        ret.setTotal(Integer.parseInt(itemList.getTotalElements()+""));
+        ret.setTotal(itemList.getTotalPages());
         ret.setPage(pageNum+1);
-        ret.setRecords(pageSize);
+        ret.setRecords(itemList.getTotalElements());
         ret.setRows(itemList.getContent());
 
         return ret;
