@@ -1,0 +1,29 @@
+############################################################
+#
+# web访问端口号  约定：8088
+#
+############################################################
+server:
+  port: 8888
+  tomcat:
+    uri-encoding: UTF-8
+  max-http-header-size: 80KB
+
+############################################################
+#
+# Data Source Config
+#
+############################################################
+spring:
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.31.46:3306/foodie_dev?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true
+    username: root
+    password: abc123456
+
+fdfs:
+  connect-timeout: 30             # conn timeout
+  so-timeout: 30                  # read timeout
+  tracker-list: 192.168.31.98:22122

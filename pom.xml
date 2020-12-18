@@ -15,6 +15,7 @@
         <module>mapper</module>
         <module>sso</module>
         <module>es</module>
+        <module>fast-dfs</module>
     </modules>
 
     <packaging>pom</packaging>
